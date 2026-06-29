@@ -11,8 +11,8 @@
 pkg update -y
 pkg install -y git
 
-git clone https://github.com/YOUR_USERNAME/avid-termux-ubuntu-launcher.git
-cd avid-termux-ubuntu-launcher
+git clone https://github.com/avidkiya/termux-ubuntu-launcher.git
+cd termux-ubuntu-launcher
 bash install.sh
 ```
 
@@ -58,7 +58,7 @@ Then use:
 ## Uninstall
 
 ```bash
-cd avid-termux-ubuntu-launcher
+cd termux-ubuntu-launcher
 bash uninstall.sh
 ```
 
