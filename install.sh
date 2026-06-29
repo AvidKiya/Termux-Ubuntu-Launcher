@@ -95,6 +95,8 @@ cat > "$BASHRC" <<EOF2
 # This is an upgraded version of the classic Avid Kiya Termux fish theme.
 # Old file was backed up as ~/.bashrc.avid-backup.DATE-TIME
 
+export PATH="$APP_DIR/bin:$PATH"
+
 $MARK_BEGIN
 if [ -f "$LAUNCHER_DST" ]; then
   . "$LAUNCHER_DST"
@@ -105,8 +107,9 @@ EOF2
 msg "[+] Installing fish compatibility hook..."
 mkdir -p "$FISH_CONF_DIR"
 cat > "$FISH_CONF" <<EOF2
-# Avid Kiya Launcher fish compatibility hook
-# If Termux starts fish directly, jump to bash so ~/.bashrc can show the menu.
+# Avid Kiya DevHub fish compatibility hook
+set -gx PATH "$APP_DIR/bin" $PATH
+# If Termux starts fish directly, jump to bash so ~/.bashrc can show the DevHub menu.
 if status is-interactive
     if test -z "\$AK_LAUNCHER_SHOWN"; and test -f "$LAUNCHER_DST"
         set -gx AK_STARTED_FROM_FISH 1

@@ -216,12 +216,13 @@ python -m pip install --user flask >/dev/null 2>&1 || pip install flask >/dev/nu
 cd "$AK_WEB_DIR" && AK_APP_DIR="$AK_APP_DIR" AK_WEB_HOST="$AK_WEB_HOST" AK_WEB_PORT="$AK_WEB_PORT" python app.py
 }
 
-health_menu(){ clear; banner; echo "🩺 Health Check"; echo; status_line; echo; echo "Termux tools:"; for t in fish curl git ruby lolcat proot-distro python; do has "$t" && echo "[✓] $t" || echo "[ ] $t"; done; echo; echo "Ubuntu tools:"; cyber_health; pause; }
+health_once(){ clear; banner; echo "🩺 Health Check"; echo; status_line; echo; echo "Termux tools:"; for t in fish curl git ruby lolcat proot-distro python; do has "$t" && echo "[✓] $t" || echo "[ ] $t"; done; echo; echo "Ubuntu tools:"; cyber_health; }
+health_menu(){ health_once; pause; }
 settings_menu(){ ${EDITOR:-nano} "$AK_CONFIG"; }
 logs_menu(){ clear; ls -lh "$AK_LOG_DIR"; echo; read -rp "Open log file name or Enter back: " f; [ -n "$f" ] && ${PAGER:-less} "$AK_LOG_DIR/$f"; }
 
 case "${1:-menu}" in
- menu) main_menu;; web) web_menu;; health) health_menu;; health-once) health_menu;; security|cyber) cyber_menu;; ai) ai_menu;; ubuntu) ubuntu_menu;; termux) termux_menu;;
+ menu) main_menu;; web) web_menu;; health) health_menu;; health-once) health_once;; security|cyber) cyber_menu;; ai) ai_menu;; ubuntu) ubuntu_menu;; termux) termux_menu;;
  ubuntu-patch) patch_ubuntu_full;;
  ai-mimo) install_mimo;; ai-claude) install_claude;; ai-gemini) install_gemini;; ai-aider) ubuntu_run_logged 'apt install -y pipx python3-venv; pipx ensurepath; pipx install aider-chat || pip install -U aider-chat';; ai-all) install_mimo; install_claude; install_gemini; ubuntu_run_logged 'apt install -y pipx python3-venv; pipx ensurepath; pipx install aider-chat || pip install -U aider-chat';;
  dev-all) ubuntu_run_logged 'apt install -y nodejs npm python3 python3-pip python3-venv pipx git tmux htop tree jq ripgrep fd-find bat fzf screenfetch figlet ruby build-essential; npm install -g npm@latest pnpm yarn typescript ts-node nodemon || true';;

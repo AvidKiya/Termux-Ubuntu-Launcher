@@ -200,3 +200,21 @@ Interactive tools such as MiMo, Claude Code, Gemini CLI, and shells should still
 ```bash
 avid
 ```
+
+
+## Startup behavior
+
+After running `bash install.sh`, every new Termux session opens the full Avid Kiya DevHub menu automatically. If you still see the old 4-option menu, reinstall once:
+
+```bash
+cd termux-ubuntu-launcher
+git pull
+bash install.sh
+exec bash -i
+```
+
+You can always open the hub manually with:
+
+```bash
+avid
+```
