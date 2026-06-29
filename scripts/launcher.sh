@@ -150,7 +150,7 @@ ak_ubuntu_installed() {
 
 ak_install_ubuntu() {
   clear
-  echo "[+] Installing Ubuntu with proot-distro..."
+  echo "[+] Installing/Patching Ubuntu with proot-distro..."
 
   if ! ak_has proot-distro; then
     echo "[+] Installing proot-distro first..."
@@ -158,15 +158,43 @@ ak_install_ubuntu() {
   fi
 
   if ak_ubuntu_installed; then
-    echo "[i] Ubuntu is already installed."
+    echo "[i] Ubuntu is already installed. Patching/repairing environment..."
   else
     proot-distro install "${AK_UBUNTU_DISTRO}"
   fi
 
-  echo "[+] Preparing Ubuntu packages..."
-  proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -lc 'apt update && apt install -y curl ca-certificates bash'
+  echo "[+] Updating Ubuntu and installing required packages..."
+  proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -lc '
+    set -e
+    export DEBIAN_FRONTEND=noninteractive
+    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+    apt update
+    apt install -y \
+      bash curl wget git nano ca-certificates sudo \
+      patch make gcc g++ build-essential pkg-config \
+      python3 python3-pip python3-venv \
+      procps util-linux coreutils findutils grep sed gawk tar gzip unzip \
+      iproute2 net-tools dnsutils openssl
 
-  echo "[✓] Ubuntu is ready. Use option 2 to enter Ubuntu."
+    cat > /etc/profile.d/avid-kiya-path.sh <<"EOF_INNER"
+# Avid Kiya Termux Ubuntu PATH patch
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+EOF_INNER
+
+    chmod +x /etc/profile.d/avid-kiya-path.sh || true
+
+    if ! grep -q "avid-kiya-path" /root/.bashrc 2>/dev/null; then
+      cat >> /root/.bashrc <<"EOF_INNER"
+
+# Avid Kiya PATH patch
+[ -f /etc/profile.d/avid-kiya-path.sh ] && . /etc/profile.d/avid-kiya-path.sh
+EOF_INNER
+    fi
+  '
+
+  echo "[✓] Ubuntu is installed/patched and ready. Use option 2 to enter Ubuntu."
   ak_pause
 }
 
@@ -183,9 +211,13 @@ ak_run_ubuntu() {
     return
   fi
 
-  # Run a real Ubuntu shell with a startup rcfile.
+  # Run a real Ubuntu shell with a startup rcfile and PATH patch.
   # Note: in Termux/proot the kernel is still Android's kernel, not a real PC kernel.
   proot-distro login "${AK_UBUNTU_DISTRO}" -- env AK_WTTR_LOCATION="$AK_WTTR_LOCATION" bash -lc 'cat > /tmp/avid-kiya-ubuntu-rc.sh <<'"'"'AK_UBUNTU_RC_EOF'"'"'
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+[ -f /etc/profile.d/avid-kiya-path.sh ] && . /etc/profile.d/avid-kiya-path.sh
 clear
 cat <<'"'"'EOF2'"'"'
        .--.    

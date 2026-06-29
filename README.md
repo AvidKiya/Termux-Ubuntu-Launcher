@@ -22,6 +22,12 @@ bash install.sh
 source ~/.bashrc
 ```
 
+If you are inside fish, do not run `source ~/.bashrc`. Use this instead:
+
+```bash
+exec bash -i
+```
+
 Then use:
 
 ```text
@@ -52,6 +58,8 @@ Then use:
 - Optional `lolcat` colors
 - Safe uninstall script
 - Config file at `~/.termux-avid-kiya/config`
+- Rewrites `~/.bashrc` from zero after backing it up
+- Ubuntu PATH/development patch for tools that need `patch`, `gcc`, `make`, etc.
 
 ---
 

@@ -20,6 +20,8 @@
 - نمایش آب‌وهوا با `wttr.in/36.46,52.86`
 - پشتیبانی از رنگی کردن خروجی با `lolcat`
 - امکان حذف امن با `uninstall.sh`
+- پاک‌سازی و نوشتن دوباره `~/.bashrc` از صفر همراه با بکاپ
+- پچ PATH و نصب ابزارهای لازم داخل Ubuntu مثل `patch`، `gcc`، `make` برای نصب ابزارهایی مثل mimo
 
 ## نصب
 
@@ -34,10 +36,16 @@ cd termux-ubuntu-launcher
 bash install.sh
 ```
 
-بعد از نصب، Termux را کامل ببندید و دوباره باز کنید. یا همین دستور را بزنید:
+بعد از نصب، Termux را کامل ببندید و دوباره باز کنید. اگر داخل Bash هستید می‌توانید بزنید:
 
 ```bash
 source ~/.bashrc
+```
+
+اما اگر داخل fish هستید، `source ~/.bashrc` نزنید؛ چون fish فایل bash را نمی‌فهمد. به‌جایش بزنید:
+
+```bash
+exec bash -i
 ```
 
 ## استفاده
@@ -68,11 +76,11 @@ Ubuntu را با `proot-distro` نصب می‌کند:
 proot-distro install ubuntu
 ```
 
-و داخل Ubuntu پکیج‌های پایه را نصب می‌کند:
+و داخل Ubuntu پکیج‌های پایه و پکیج‌های پچ/کامپایل را نصب می‌کند:
 
 ```bash
 apt update
-apt install -y curl ca-certificates bash
+apt install -y curl ca-certificates bash patch make gcc g++ build-essential git wget
 ```
 
 ### گزینه ۴: Exit - Opening Termux normally
@@ -106,7 +114,7 @@ AK_AUTO_FISH_AFTER_TERMUX="1"
 ## حذف نصب
 
 ```bash
-cd termux-ubuntu-launcher
+cd avid-termux-ubuntu-launcher
 bash uninstall.sh
 ```
 
@@ -152,3 +160,33 @@ proot-distro install ubuntu
 pkg install ruby
  gem install lolcat --no-document
 ```
+
+
+## تعمیر سریع اگر قبلاً `source ~/.bashrc` را داخل fish زدید
+
+اگر خطایی شبیه این دیدید:
+
+```text
+Missing end to balance this if statement
+```
+
+مشکل از این است که داخل fish دستور `source ~/.bashrc` زده شده. راه‌حل:
+
+```bash
+exec bash -i
+```
+
+یا Termux را کامل ببندید و دوباره باز کنید.
+
+## دستور آپدیت از GitHub
+
+بعد از اینکه فایل‌های جدید را در GitHub آپلود کردید، برای آپدیت نصب قبلی:
+
+```bash
+cd termux-ubuntu-launcher
+git pull
+bash install.sh
+exec bash -i
+```
+
+برای پچ کردن Ubuntu هم از منو گزینه ۳ را بزنید. اگر Ubuntu از قبل نصب باشد، حذف نمی‌شود؛ فقط پچ و آپدیت می‌شود.

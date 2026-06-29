@@ -1,5 +1,5 @@
 # Avid Kiya Termux Ubuntu Launcher config
-# Copy/edit values after install in: ~/.termux-avid-kiya/config
+# After install, edit this file at: ~/.termux-avid-kiya/config
 
 # Weather location for wttr.in
 AK_WTTR_LOCATION="36.46,52.86"

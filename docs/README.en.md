@@ -20,6 +20,8 @@ This project installs a complete startup launcher for Termux. Every time you ope
 - Weather report from `wttr.in/36.46,52.86`
 - Optional colors through `lolcat`
 - Safe uninstall script
+- Backs up and rewrites `~/.bashrc` from zero
+- Ubuntu PATH/development patch including `patch`, `gcc`, `make`, and build tools
 
 ## Installation
 
@@ -34,10 +36,16 @@ cd termux-ubuntu-launcher
 bash install.sh
 ```
 
-Restart Termux, or run:
+Restart Termux, or if you are inside Bash run:
 
 ```bash
 source ~/.bashrc
+```
+
+If you are inside fish, do not run `source ~/.bashrc`. Run this instead:
+
+```bash
+exec bash -i
 ```
 
 ## Usage
@@ -68,11 +76,11 @@ Installs Ubuntu using:
 proot-distro install ubuntu
 ```
 
-Then prepares basic packages inside Ubuntu:
+Then prepares base and development/patch packages inside Ubuntu:
 
 ```bash
 apt update
-apt install -y curl ca-certificates bash
+apt install -y curl ca-certificates bash patch make gcc g++ build-essential git wget
 ```
 
 ### Option 4: Exit - Opening Termux normally
@@ -106,7 +114,7 @@ AK_AUTO_FISH_AFTER_TERMUX="1"
 ## Uninstall
 
 ```bash
-cd termux-ubuntu-launcher
+cd avid-termux-ubuntu-launcher
 bash uninstall.sh
 ```
 
@@ -152,3 +160,33 @@ or choose menu option 3.
 pkg install ruby
 gem install lolcat --no-document
 ```
+
+
+## Quick repair if you sourced ~/.bashrc inside fish
+
+If you see:
+
+```text
+Missing end to balance this if statement
+```
+
+You probably ran `source ~/.bashrc` inside fish. Fix it with:
+
+```bash
+exec bash -i
+```
+
+or restart Termux.
+
+## Updating an existing installation from GitHub
+
+After uploading the new files to GitHub, update an old install with:
+
+```bash
+cd termux-ubuntu-launcher
+git pull
+bash install.sh
+exec bash -i
+```
+
+To patch Ubuntu, choose menu option 3. If Ubuntu already exists, it will not be removed; it will only be patched and updated.
