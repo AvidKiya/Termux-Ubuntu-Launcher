@@ -218,3 +218,28 @@ You can always open the hub manually with:
 ```bash
 avid
 ```
+
+
+## v3.4 Mobile Web Panel
+
+The web panel was rebuilt for phones:
+
+- mobile-first bottom navigation
+- faster cached status checks
+- background tasks
+- Tasks page
+- better Logs page
+- Persian/English layout
+- safer localhost-only default
+
+Run:
+
+```bash
+avid web
+```
+
+Open:
+
+```text
+http://127.0.0.1:8765
+```

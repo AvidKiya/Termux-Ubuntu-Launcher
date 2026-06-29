@@ -99,7 +99,11 @@ case "$c" in
 
 patch_ubuntu_full(){
 ubuntu_ok || { echo "Ubuntu not ready. Install it first."; return 1; }
-ubuntu_run_logged 'export DEBIAN_FRONTEND=noninteractive; apt update; apt install -y bash fish curl wget git nano ca-certificates sudo ruby ruby-dev nodejs npm python3 python3-pip python3-venv python3-dev pipx build-essential gcc g++ make cmake pkg-config patch jq ripgrep fd-find sqlite3 htop tree unzip zip xz-utils procps util-linux coreutils findutils grep sed gawk iproute2 net-tools dnsutils openssl locales; locale-gen C.UTF-8 || true; gem install lolcat --no-document || true; mkdir -p /root/.config/fish/conf.d; cat > /root/.config/fish/conf.d/avid-kiya-path.fish <<"FISH_EOF"
+if ubuntu_exec '[ -f /root/.avid-devhub/base.ok ] && command -v fish >/dev/null 2>&1 && command -v curl >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1'; then
+  log "Ubuntu base already patched. Skipping heavy base install."
+  return 0
+fi
+ubuntu_run_logged 'export DEBIAN_FRONTEND=noninteractive; apt update; apt install -y bash fish curl wget git nano ca-certificates sudo ruby ruby-dev nodejs npm python3 python3-pip python3-venv python3-dev pipx build-essential gcc g++ make cmake pkg-config patch jq ripgrep fd-find sqlite3 htop tree unzip zip xz-utils procps util-linux coreutils findutils grep sed gawk iproute2 net-tools dnsutils openssl locales; locale-gen C.UTF-8 || true; gem install lolcat --no-document || true; mkdir -p /root/.config/fish/conf.d /root/.avid-devhub; cat > /root/.config/fish/conf.d/avid-kiya-path.fish <<"FISH_EOF"
 set -gx PATH /root/.mimocode/bin /root/.npm-global/bin /root/.local/bin /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin $PATH
 set -gx LANG C.UTF-8
 set -gx LC_ALL C.UTF-8
@@ -109,7 +113,7 @@ export PATH="/root/.mimocode/bin:/root/.npm-global/bin:/root/.local/bin:/usr/loc
 export LANG=C.UTF-8
 export LC_ALL=C.UTF-8
 SH_EOF
-chmod +x /etc/profile.d/avid-kiya-path.sh; grep -q mimocode /root/.bashrc 2>/dev/null || echo "export PATH=\"/root/.mimocode/bin:\$PATH\"" >> /root/.bashrc; fish -lc '\''type -q omf; or curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish'\'' || true; fish -lc '\''omf install batman; or true; omf theme batman; or omf batman; or true'\'' || true'
+chmod +x /etc/profile.d/avid-kiya-path.sh; grep -q mimocode /root/.bashrc 2>/dev/null || echo "export PATH=\"/root/.mimocode/bin:\$PATH\"" >> /root/.bashrc; fish -lc '\''type -q omf; or curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish'\'' || true; fish -lc '\''omf install batman; or true; omf theme batman; or omf batman; or true'\'' || true; date > /root/.avid-devhub/base.ok'
 }
 
 ai_menu(){ while true; do clear; banner; cat <<'MENU_EOF'
