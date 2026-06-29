@@ -163,3 +163,40 @@ Option 2 shows the Ubuntu banner first, then opens fish/batman by default. To di
 nano ~/.termux-avid-kiya/config
 AK_AUTO_FISH_AFTER_UBUNTU="0"
 ```
+
+
+## v3.1 Web Panel
+
+The local web panel is now multi-page and bilingual-style. Run:
+
+```bash
+avid web
+```
+
+Open:
+
+```text
+http://127.0.0.1:8765
+```
+
+Pages:
+
+- Dashboard
+- AI Tools
+- Cybersecurity Lab
+- Developer Tools
+- Ubuntu
+- Settings
+- Logs
+
+The web panel can start non-interactive install/repair tasks in the background and saves output to:
+
+```bash
+~/.termux-avid-kiya/logs/
+```
+
+Interactive tools such as MiMo, Claude Code, Gemini CLI, and shells should still be run from the terminal menu:
+
+```bash
+avid
+```
