@@ -106,3 +106,41 @@ proot-distro remove ubuntu
 ## License
 
 MIT
+
+
+## MiMo Code support
+
+Menu option 3 patches Ubuntu and tries to install MiMo Code automatically. It installs Node.js/npm and then runs:
+
+```bash
+npm install -g @mimo-ai/cli
+```
+
+If that fails, it also tries the official installer:
+
+```bash
+curl -fsSL https://mimo.xiaomi.com/install | bash
+```
+
+After patching, option 2 should show the MiMo path if `mimo` is available.
+
+
+## Final MiMo command-not-found fix
+
+MiMo is often installed at:
+
+```bash
+/root/.mimocode/bin/mimo
+```
+
+Menu option 3 now automatically adds this path to PATH, writes it to `/root/.bashrc`, sources `/root/.bashrc`, and creates this symlink when possible:
+
+```bash
+ln -sf /root/.mimocode/bin/mimo /usr/local/bin/mimo
+```
+
+After running option 3, this should work inside Ubuntu:
+
+```bash
+mimo
+```

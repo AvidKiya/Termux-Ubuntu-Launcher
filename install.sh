@@ -65,12 +65,11 @@ msg "[+] Installing launcher files..."
 cp "$LAUNCHER_SRC" "$LAUNCHER_DST"
 chmod +x "$LAUNCHER_DST"
 
-if [ ! -f "$CONFIG_DST" ]; then
-  cp "$CONFIG_SRC" "$CONFIG_DST"
-else
-  msg "[i] Existing config kept: $CONFIG_DST"
-  msg "[i] If you want new defaults, compare it with: $CONFIG_SRC"
+if [ -f "$CONFIG_DST" ]; then
+  cp "$CONFIG_DST" "$CONFIG_DST.avid-backup.$(date +%Y%m%d-%H%M%S)"
 fi
+# Final installer intentionally rewrites config so old settings do not break the final theme.
+cp "$CONFIG_SRC" "$CONFIG_DST"
 
 msg "[+] Backing up and rewriting ~/.bashrc from zero..."
 touch "$BASHRC"
@@ -112,5 +111,5 @@ msg ""
 msg "IMPORTANT: If you are currently inside fish, do NOT run: source ~/.bashrc"
 msg "Instead restart Termux, or run: exec bash -i"
 msg ""
-msg "Menu option 1 = classic upgraded Avid Kiya Termux theme + fish/batman"
+msg "Menu option 1 = final Avid Kiya Termux banner + fish/batman"
 msg "Menu option 3 = install/patch Ubuntu, then option 2 runs Ubuntu"
