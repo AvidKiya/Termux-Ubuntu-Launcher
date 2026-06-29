@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 - 2026-06-29
+
+- Fixed Ubuntu detection by testing real `proot-distro login ubuntu -- /bin/true`.
+- Option 3 now asks: Patch/Update, Reinstall, or Back when Ubuntu exists.
+- Added repair flow for broken containers where install says container exists.
+- Added responsive compact ASCII menu for narrow mobile terminals.
+- Ubuntu option now starts only after a successful login test.
+
 ## 1.1.0 - 2026-06-29
 
 - Installer now backs up and rewrites `~/.bashrc` from zero, as requested.

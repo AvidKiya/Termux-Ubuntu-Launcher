@@ -17,3 +17,6 @@ AK_AUTO_FISH_AFTER_TERMUX="0"
 # 1 = colorize output with lolcat when available
 # 0 = no lolcat colors
 AK_USE_LOLCAT="1"
+
+# 1 = force UTF-8 locale for box drawing characters
+AK_UTF8="1"
