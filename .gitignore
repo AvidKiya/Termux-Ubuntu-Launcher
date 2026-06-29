@@ -1,1 +1,14 @@
-CHANGELOG.md
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs / temp
+*.log
+*.tmp
+.cache/
+
+# Local test artifacts
+.local-test/
