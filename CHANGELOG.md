@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.3.0 - 2026-06-29
+
+- Ubuntu now installs fish, Oh My Fish, and the batman theme too.
+- Ubuntu option 2 shows the Avid Kiya Ubuntu banner and then opens fish/batman by default.
+- Added Ubuntu fish PATH config so MiMo works inside fish as well.
+- Added `AK_AUTO_FISH_AFTER_UBUNTU` config option.
+
 ## 2.2.0 - 2026-06-29
 
 - Finalized matched Termux/Ubuntu Avid Kiya banners with lolcat color style.

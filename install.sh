@@ -4,8 +4,12 @@ set -euo pipefail
 APP_DIR="$HOME/.termux-avid-kiya"
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAUNCHER_SRC="$PROJECT_DIR/scripts/launcher.sh"
+AVID_SRC="$PROJECT_DIR/scripts/avid.sh"
+WEB_SRC="$PROJECT_DIR/web"
 CONFIG_SRC="$PROJECT_DIR/config.example"
 LAUNCHER_DST="$APP_DIR/launcher.sh"
+AVID_DST="$APP_DIR/bin/avid"
+WEB_DST="$APP_DIR/web"
 CONFIG_DST="$APP_DIR/config"
 BASHRC="$HOME/.bashrc"
 FISH_CONF_DIR="$HOME/.config/fish/conf.d"
@@ -33,7 +37,7 @@ pkg update -y || true
 pkg upgrade -y || true
 
 msg "[+] Installing classic Avid Kiya Termux dependencies..."
-pkg install -y termux-api python git ruby curl fish figlet screenfetch nano wget ncurses-utils || true
+pkg install -y termux-api python git ruby curl fish figlet screenfetch nano wget ncurses-utils nodejs openssh tmux jq ripgrep fd bat eza htop tree unzip zip || true
 
 msg "[+] Installing Ubuntu/proot dependencies..."
 pkg install -y proot-distro || true
@@ -62,8 +66,18 @@ else
 fi
 
 msg "[+] Installing launcher files..."
+mkdir -p "$APP_DIR/bin"
 cp "$LAUNCHER_SRC" "$LAUNCHER_DST"
 chmod +x "$LAUNCHER_DST"
+
+msg "[+] Installing Avid Kiya DevHub command and web panel..."
+cp "$AVID_SRC" "$AVID_DST"
+chmod +x "$AVID_DST"
+rm -rf "$WEB_DST"
+cp -R "$WEB_SRC" "$WEB_DST"
+if [ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ]; then
+  ln -sf "$AVID_DST" "$PREFIX/bin/avid" || true
+fi
 
 if [ -f "$CONFIG_DST" ]; then
   cp "$CONFIG_DST" "$CONFIG_DST.avid-backup.$(date +%Y%m%d-%H%M%S)"
@@ -107,9 +121,13 @@ msg "[i] Launcher:  $LAUNCHER_DST"
 msg "[i] Config:    $CONFIG_DST"
 msg "[i] Bashrc:    $BASHRC"
 msg "[i] Fish hook: $FISH_CONF"
+msg "[i] Avid command: $AVID_DST"
+msg "[i] Web panel: $WEB_DST"
 msg ""
 msg "IMPORTANT: If you are currently inside fish, do NOT run: source ~/.bashrc"
 msg "Instead restart Termux, or run: exec bash -i"
 msg ""
 msg "Menu option 1 = final Avid Kiya Termux banner + fish/batman"
-msg "Menu option 3 = install/patch Ubuntu, then option 2 runs Ubuntu"
+msg "Run professional hub with: avid"
+msg "Run web panel with: avid web"
+msg "Menu option 3 = install/patch Ubuntu + MiMo + Ubuntu fish/batman, then option 2 runs Ubuntu"

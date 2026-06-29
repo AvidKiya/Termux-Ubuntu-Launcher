@@ -231,3 +231,22 @@ After running option 3, this should work inside Ubuntu:
 ```bash
 mimo
 ```
+
+
+## Oh My Fish and batman inside Ubuntu
+
+Menu option 3 also installs and enables fish + Oh My Fish + batman inside Ubuntu:
+
+```bash
+apt install -y fish
+curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish
+omf install batman
+omf theme batman
+```
+
+Option 2 shows the Ubuntu banner first, then opens fish/batman by default. To disable it:
+
+```bash
+nano ~/.termux-avid-kiya/config
+AK_AUTO_FISH_AFTER_UBUNTU="0"
+```

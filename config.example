@@ -27,3 +27,6 @@ AK_MATCHED_BANNERS="1"
 
 # 1 = install/repair MiMo Code inside Ubuntu when option 3 patches Ubuntu
 AK_INSTALL_MIMO="1"
+
+# 1 = after showing Ubuntu banner, open fish with Oh My Fish/batman
+AK_AUTO_FISH_AFTER_UBUNTU="1"

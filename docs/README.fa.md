@@ -231,3 +231,22 @@ ln -sf /root/.mimocode/bin/mimo /usr/local/bin/mimo
 ```bash
 mimo
 ```
+
+
+## Oh My Fish و batman داخل Ubuntu
+
+گزینه ۳ فقط برای Termux نیست؛ داخل Ubuntu هم این‌ها را نصب و فعال می‌کند:
+
+```bash
+apt install -y fish
+curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish
+omf install batman
+omf theme batman
+```
+
+بعد از گزینه ۲، اول بنر Ubuntu نمایش داده می‌شود و سپس به صورت پیش‌فرض وارد fish با تم batman می‌شود. برای غیرفعال کردن:
+
+```bash
+nano ~/.termux-avid-kiya/config
+AK_AUTO_FISH_AFTER_UBUNTU="0"
+```

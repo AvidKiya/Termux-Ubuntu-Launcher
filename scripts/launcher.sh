@@ -14,6 +14,7 @@ AK_UTF8="${AK_UTF8:-1}"
 AK_CLASSIC_TERMUX_THEME="${AK_CLASSIC_TERMUX_THEME:-0}"
 AK_MATCHED_BANNERS="${AK_MATCHED_BANNERS:-1}"
 AK_INSTALL_MIMO="${AK_INSTALL_MIMO:-1}"
+AK_AUTO_FISH_AFTER_UBUNTU="${AK_AUTO_FISH_AFTER_UBUNTU:-1}"
 
 [ -f "$AK_CONFIG" ] && . "$AK_CONFIG"
 
@@ -197,7 +198,7 @@ ak_ubuntu_patch() {
 
     apt update
     apt install -y \
-      bash curl wget git nano ca-certificates sudo ruby ruby-dev \
+      bash fish curl wget git nano ca-certificates sudo ruby ruby-dev \
       patch make gcc g++ build-essential pkg-config cmake \
       python3 python3-pip python3-venv python3-dev pipx \
       nodejs npm \
@@ -217,6 +218,23 @@ ak_ubuntu_patch() {
     # lolcat inside Ubuntu for the same colorful style.
     if ! command -v lolcat >/dev/null 2>&1; then
       gem install lolcat --no-document || true
+    fi
+
+    # Oh My Fish + batman theme inside Ubuntu.
+    # This makes Ubuntu use the same helpful fish/batman guide-style prompt.
+    if command -v fish >/dev/null 2>&1; then
+      echo "[+] Installing Oh My Fish and batman theme inside Ubuntu..."
+      fish -lc 'type -q omf; or curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish' || true
+      fish -lc 'omf install batman; or true' || true
+      fish -lc 'omf theme batman; or omf batman; or true' || true
+
+      mkdir -p /root/.config/fish/conf.d
+      cat > /root/.config/fish/conf.d/avid-kiya-path.fish <<"EOF_FISH"
+# Avid Kiya PATH patch for Ubuntu fish
+set -gx PATH /root/.mimocode/bin /root/.npm-global/bin /root/.local/bin /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin $PATH
+set -gx LANG C.UTF-8
+set -gx LC_ALL C.UTF-8
+EOF_FISH
     fi
 
     cat > /etc/profile.d/avid-kiya-path.sh <<"EOF_INNER"
@@ -330,7 +348,7 @@ ak_run_ubuntu() {
   if ! ak_has proot-distro; then echo "proot-distro is not installed. Choose option 3 first."; ak_pause; return; fi
   if ! ak_ubuntu_exists; then echo "Ubuntu is not ready or login test failed. Choose option 3 first."; ak_pause; return; fi
 
-  proot-distro login "${AK_UBUNTU_DISTRO}" -- env AK_WTTR_LOCATION="$AK_WTTR_LOCATION" bash -lc 'cat > /tmp/avid-kiya-ubuntu-rc.sh <<'"'"'AK_UBUNTU_RC_EOF'"'"'
+  proot-distro login "${AK_UBUNTU_DISTRO}" -- env AK_WTTR_LOCATION="$AK_WTTR_LOCATION" AK_AUTO_FISH_AFTER_UBUNTU="$AK_AUTO_FISH_AFTER_UBUNTU" bash -lc 'cat > /tmp/avid-kiya-ubuntu-rc.sh <<'"'"'AK_UBUNTU_RC_EOF'"'"'
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.mimocode/bin:/root/.npm-global/bin:/root/.local/bin:$PATH"
 export LANG=C.UTF-8
 export LC_ALL=C.UTF-8
@@ -367,6 +385,10 @@ if command -v curl >/dev/null 2>&1; then curl -s --connect-timeout 8 "wttr.in/${
 date | ak_ubuntu_color
 uname -a
 if command -v mimo >/dev/null 2>&1; then echo "MiMo: $(command -v mimo)"; elif [ -x /root/.mimocode/bin/mimo ]; then echo "MiMo: /root/.mimocode/bin/mimo"; else echo "MiMo: not installed - run menu option 3 then choose Patch/Update"; fi
+if [ "${AK_AUTO_FISH_AFTER_UBUNTU:-1}" = "1" ] && command -v fish >/dev/null 2>&1; then
+  echo "Shell: opening fish + Oh My Fish batman theme..."
+  exec fish -l
+fi
 export PS1=">>> "
 AK_UBUNTU_RC_EOF
 exec bash --rcfile /tmp/avid-kiya-ubuntu-rc.sh -i'
