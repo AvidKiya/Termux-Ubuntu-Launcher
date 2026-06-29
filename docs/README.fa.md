@@ -1,5 +1,7 @@
 # راهنمای فارسی Avid Kiya Termux Ubuntu Launcher
 
+این پروژه نسخه ارتقا یافته همان تم قدیمی Avid Kiya برای Termux است؛ همان ترکیب `screenfetch`، `lolcat`، `figlet + Avid Kiya +`، آب‌وهوا، تاریخ و ورود به `fish` با Oh My Fish و تم batman، اما حالا با منوی Termux/Ubuntu و installer کامل.
+
 این پروژه یک لانچر کامل برای Termux است که با باز شدن برنامه Termux یا هر سشن جدید، یک منوی زیبا نمایش می‌دهد:
 
 ```text
@@ -12,6 +14,7 @@
 ## قابلیت‌ها
 
 - نصب خودکار وابستگی‌ها
+- نصب fish، Oh My Fish و تم batman
 - اضافه شدن خودکار به `~/.bashrc`
 - نمایش منوی ASCII هنگام باز شدن Termux
 - اجرای واقعی Ubuntu با `proot-distro`

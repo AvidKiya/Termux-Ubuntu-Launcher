@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.0 - 2026-06-29
+
+- Rebased project around the original classic Avid Kiya Termux theme.
+- Option 1 now runs the classic flow and opens fish by default.
+- Installer now installs termux-api, termux storage setup, fish, Oh My Fish, and batman theme.
+- Installer now includes python, git, ruby, curl, figlet, screenfetch, nano, lolcat.
+
 ## 1.2.0 - 2026-06-29
 
 - Fixed Ubuntu detection by testing real `proot-distro login ubuntu -- /bin/true`.

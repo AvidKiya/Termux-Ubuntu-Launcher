@@ -1,7 +1,7 @@
 # Avid Kiya Termux Ubuntu Launcher
 
 **فارسی:** لانچر منویی زیبا برای Termux که موقع باز شدن هر سشن، بین Termux، Ubuntu و نصب Ubuntu انتخاب می‌دهد.  
-**English:** A beautiful startup menu for Termux that lets you choose Termux, Ubuntu, install Ubuntu, or open a normal Termux session.
+**English:** An upgraded version of the classic Avid Kiya fish theme, plus a beautiful startup menu for Termux that lets you choose Termux, Ubuntu, install Ubuntu, or open a normal Termux session.
 
 ---
 
@@ -48,9 +48,34 @@ Then use:
 
 ---
 
+## Classic base
+
+This project extends the old setup:
+
+```bash
+pkg update
+pkg upgrade
+pkg install termux-api python git ruby curl fish figlet screenfetch nano
+curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish
+omf install batman
+gem install lolcat
+```
+
+Option 1 keeps the classic flow:
+
+```bash
+clear
+screenfetch | lolcat
+figlet + Avid Kiya + | lolcat
+curl -s wttr.in/36.46,52.86 | head -7
+date | lolcat
+fish
+```
+
 ## Features
 
 - Auto-start menu from `~/.bashrc`
+- Installs fish, Oh My Fish, and batman theme
 - Termux banner with Android/system info
 - Ubuntu banner after entering Ubuntu
 - Real Ubuntu installation using `proot-distro`

@@ -1,5 +1,7 @@
 # Avid Kiya Termux Ubuntu Launcher English Guide
 
+This is an upgraded version of the old Avid Kiya Termux fish theme: `screenfetch`, `lolcat`, `figlet + Avid Kiya +`, weather, date, and fish with Oh My Fish/batman — now extended with a Termux/Ubuntu menu and installer.
+
 This project installs a complete startup launcher for Termux. Every time you open Termux or a new bash session, it shows a menu:
 
 ```text
@@ -12,6 +14,7 @@ This project installs a complete startup launcher for Termux. Every time you ope
 ## Features
 
 - Automatic dependency installation
+- Installs fish, Oh My Fish, and batman theme
 - Automatic `~/.bashrc` integration
 - Beautiful ASCII startup menu
 - Real Ubuntu shell through `proot-distro`

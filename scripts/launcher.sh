@@ -9,9 +9,10 @@ AK_CONFIG="$AK_APP_DIR/config"
 AK_WTTR_LOCATION="${AK_WTTR_LOCATION:-36.46,52.86}"
 AK_NAME="${AK_NAME:-Avid Kiya}"
 AK_UBUNTU_DISTRO="${AK_UBUNTU_DISTRO:-ubuntu}"
-AK_AUTO_FISH_AFTER_TERMUX="${AK_AUTO_FISH_AFTER_TERMUX:-0}"
+AK_AUTO_FISH_AFTER_TERMUX="${AK_AUTO_FISH_AFTER_TERMUX:-1}"
 AK_USE_LOLCAT="${AK_USE_LOLCAT:-1}"
 AK_UTF8="${AK_UTF8:-1}"
+AK_CLASSIC_TERMUX_THEME="${AK_CLASSIC_TERMUX_THEME:-1}"
 
 [ -f "$AK_CONFIG" ] && . "$AK_CONFIG"
 
@@ -85,6 +86,21 @@ ak_android_info() {
        ██     ██         RAM: ${ram}
        ██     ██
 EOF2
+}
+
+ak_classic_avid_title() {
+  if ak_has figlet; then
+    figlet '+ Avid Kiya +'
+  else
+    cat <<'EOF2'
+       _          _     _   _  ___                 
+      / \   __   (_) __| | | |/ (_) _   _  __ _   
+     / _ \ \ \ / / |/ _` | | ' /| || | | |/ _` |  
+    / ___ \ \ V /| | (_| | | . \| || |_| | (_| |  
+   /_/   \_\ \_/ |_|\__,_| |_|\_\_| \__, |\__,_|  
+                                     |___/         
+EOF2
+  fi
 }
 
 ak_termux_title() {
@@ -166,21 +182,33 @@ EOF2
 
 ak_termux_banner() {
   clear
+  # Classic upgraded version of the user's old theme:
+  # clear; screenfetch | lolcat; figlet + Avid Kiya + | lolcat; weather; date | lolcat; fish
   if ak_has screenfetch; then
     screenfetch | ak_color
   else
     ak_android_info | ak_color
   fi
   echo
-  if [ "$(ak_cols)" -lt 62 ]; then
-    ak_termux_title_compact | ak_color
+  if [ "${AK_CLASSIC_TERMUX_THEME:-1}" = "1" ]; then
+    ak_classic_avid_title | ak_color
   else
-    ak_termux_title | ak_color
+    if [ "$(ak_cols)" -lt 62 ]; then
+      ak_termux_title_compact | ak_color
+    else
+      ak_termux_title | ak_color
+    fi
   fi
   ak_weather
   date | ak_color
   uname -a
   export PS1='^^>>> '
+}
+
+ak_open_fish_if_enabled() {
+  if [ "${AK_AUTO_FISH_AFTER_TERMUX:-1}" = "1" ] && ak_has fish; then
+    exec fish
+  fi
 }
 
 ak_ubuntu_exists() {
@@ -355,9 +383,7 @@ ak_show_menu() {
   case "$ak_choice" in
     1)
       ak_termux_banner
-      if [ "${AK_AUTO_FISH_AFTER_TERMUX:-0}" = "1" ] && ak_has fish; then
-        exec fish
-      fi
+      ak_open_fish_if_enabled
       ;;
     2)
       ak_run_ubuntu
