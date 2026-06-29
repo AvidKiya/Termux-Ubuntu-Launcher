@@ -18,84 +18,106 @@ MARK_BEGIN="# >>> AVID_KIYA_TERMUX_UBUNTU_LAUNCHER >>>"
 MARK_END="# <<< AVID_KIYA_TERMUX_UBUNTU_LAUNCHER <<<"
 
 msg() { printf '%s\n' "$*"; }
+has() { command -v "$1" >/dev/null 2>&1; }
 
-if ! command -v pkg >/dev/null 2>&1; then
+pkg_missing() {
+  missing=""
+  for p in "$@"; do
+    if ! dpkg -s "$p" >/dev/null 2>&1; then
+      missing="$missing $p"
+    fi
+  done
+  printf '%s\n' "$missing"
+}
+
+pkg_install_missing() {
+  missing="$(pkg_missing "$@")"
+  if [ -n "$(printf '%s' "$missing" | tr -d ' ')" ]; then
+    msg "[+] Installing missing Termux packages:$missing"
+    pkg install -y $missing || true
+  else
+    msg "[✓] Termux packages already installed. Skipping download."
+  fi
+}
+
+ask_update() {
+  msg "[?] Check repositories for updates? This uses a little internet. [y/N]"
+  read -r ans
+  case "$ans" in y|Y|yes|YES) pkg update -y || true ;; *) msg "[i] Skipping pkg update." ;; esac
+}
+
+if ! has pkg; then
   msg "[!] This installer is made for Termux. 'pkg' command was not found."
   exit 1
 fi
 
-if [ ! -f "$LAUNCHER_SRC" ]; then
-  msg "[!] Cannot find scripts/launcher.sh. Run install.sh from the project folder."
-  exit 1
-fi
+[ -f "$LAUNCHER_SRC" ] || { msg "[!] Missing scripts/launcher.sh"; exit 1; }
+[ -f "$AVID_SRC" ] || { msg "[!] Missing scripts/avid.sh"; exit 1; }
 
 msg "[+] Creating app directory: $APP_DIR"
-mkdir -p "$APP_DIR"
+mkdir -p "$APP_DIR/bin"
 
-msg "[+] Updating and upgrading Termux packages..."
-pkg update -y || true
-pkg upgrade -y || true
+ask_update
+msg "[i] This installer does NOT run pkg upgrade automatically anymore."
+msg "[i] It installs only missing packages and keeps existing tools."
 
-msg "[+] Installing classic Avid Kiya Termux dependencies..."
-pkg install -y termux-api python git ruby curl fish figlet screenfetch nano wget ncurses-utils nodejs openssh tmux jq ripgrep fd bat eza htop tree unzip zip || true
+pkg_install_missing termux-api python git ruby curl fish figlet screenfetch nano wget ncurses-utils proot-distro nodejs openssh tmux jq ripgrep fd bat eza htop tree unzip zip
 
-msg "[+] Installing Ubuntu/proot dependencies..."
-pkg install -y proot-distro || true
-
-msg "[+] Requesting storage permission with termux-setup-storage..."
-if command -v termux-setup-storage >/dev/null 2>&1; then
+if [ ! -d "$HOME/storage" ]; then
+  msg "[+] Requesting storage permission with termux-setup-storage..."
   termux-setup-storage || true
 else
-  msg "[i] termux-setup-storage not found. Skipping."
+  msg "[✓] ~/storage already exists. Skipping termux-setup-storage."
 fi
 
-if ! command -v lolcat >/dev/null 2>&1; then
+if ! has lolcat; then
   msg "[+] Installing lolcat via Ruby gem..."
   gem install lolcat --no-document || true
-fi
-
-msg "[+] Installing Oh My Fish and batman theme..."
-if command -v fish >/dev/null 2>&1; then
-  # Install Oh My Fish only if omf is not available.
-  fish -lc 'type -q omf; or curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish' || true
-  # Install and activate batman theme. Different OMF versions may use slightly different commands.
-  fish -lc 'omf install batman; or true' || true
-  fish -lc 'omf theme batman; or omf batman; or true' || true
 else
-  msg "[!] fish was not installed correctly. Skipping Oh My Fish."
+  msg "[✓] lolcat already installed."
 fi
 
-msg "[+] Installing launcher files..."
-mkdir -p "$APP_DIR/bin"
+msg "[+] Checking Oh My Fish and batman theme..."
+if has fish; then
+  if fish -lc 'type -q omf' >/dev/null 2>&1; then
+    msg "[✓] Oh My Fish already installed."
+  else
+    fish -lc 'curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish' || true
+  fi
+  if fish -lc 'omf theme 2>/dev/null | grep -qi batman' >/dev/null 2>&1; then
+    msg "[✓] batman theme already active."
+  else
+    fish -lc 'omf install batman; or true' || true
+    fish -lc 'omf theme batman; or omf batman; or true' || true
+  fi
+fi
+
+msg "[+] Installing launcher, DevHub command and web panel files..."
 cp "$LAUNCHER_SRC" "$LAUNCHER_DST"
 chmod +x "$LAUNCHER_DST"
-
-msg "[+] Installing Avid Kiya DevHub command and web panel..."
 cp "$AVID_SRC" "$AVID_DST"
 chmod +x "$AVID_DST"
 rm -rf "$WEB_DST"
 cp -R "$WEB_SRC" "$WEB_DST"
-if [ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ]; then
-  ln -sf "$AVID_DST" "$PREFIX/bin/avid" || true
+[ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ] && ln -sf "$AVID_DST" "$PREFIX/bin/avid" || true
+
+if [ ! -f "$CONFIG_DST" ]; then
+  cp "$CONFIG_SRC" "$CONFIG_DST"
+  msg "[+] Created config: $CONFIG_DST"
+else
+  msg "[✓] Existing config kept: $CONFIG_DST"
+  msg "[i] New defaults are available in: $CONFIG_SRC"
 fi
 
-if [ -f "$CONFIG_DST" ]; then
-  cp "$CONFIG_DST" "$CONFIG_DST.avid-backup.$(date +%Y%m%d-%H%M%S)"
-fi
-# Final installer intentionally rewrites config so old settings do not break the final theme.
-cp "$CONFIG_SRC" "$CONFIG_DST"
-
-msg "[+] Backing up and rewriting ~/.bashrc from zero..."
+msg "[+] Backing up and rewriting ~/.bashrc startup block..."
 touch "$BASHRC"
 cp "$BASHRC" "$BASHRC.avid-backup.$(date +%Y%m%d-%H%M%S)"
-
-# The user requested a clean ~/.bashrc. We intentionally overwrite it.
+# User wants launcher to own startup. Keep clean but do not delete backups.
 cat > "$BASHRC" <<EOF2
 # ~/.bashrc generated by Avid Kiya Termux Ubuntu Launcher
-# This is an upgraded version of the classic Avid Kiya Termux fish theme.
 # Old file was backed up as ~/.bashrc.avid-backup.DATE-TIME
 
-export PATH="$APP_DIR/bin:$PATH"
+export PATH="$APP_DIR/bin:\$PATH"
 
 $MARK_BEGIN
 if [ -f "$LAUNCHER_DST" ]; then
@@ -107,9 +129,8 @@ EOF2
 msg "[+] Installing fish compatibility hook..."
 mkdir -p "$FISH_CONF_DIR"
 cat > "$FISH_CONF" <<EOF2
-# Avid Kiya DevHub fish compatibility hook
-set -gx PATH "$APP_DIR/bin" $PATH
-# If Termux starts fish directly, jump to bash so ~/.bashrc can show the DevHub menu.
+# Avid Kiya Launcher fish compatibility hook
+set -gx PATH "$APP_DIR/bin" \$PATH
 if status is-interactive
     if test -z "\$AK_LAUNCHER_SHOWN"; and test -f "$LAUNCHER_DST"
         set -gx AK_STARTED_FROM_FISH 1
@@ -119,18 +140,9 @@ end
 EOF2
 
 msg ""
-msg "[✓] Installed successfully."
-msg "[i] Launcher:  $LAUNCHER_DST"
-msg "[i] Config:    $CONFIG_DST"
-msg "[i] Bashrc:    $BASHRC"
-msg "[i] Fish hook: $FISH_CONF"
-msg "[i] Avid command: $AVID_DST"
-msg "[i] Web panel: $WEB_DST"
+msg "[✓] Installed/updated successfully without reinstalling existing packages."
+msg "[i] Startup menu restored: Termux / Ubuntu / Installer / Normal / DevHub"
+msg "[i] Run full professional hub manually with: avid"
+msg "[i] Run web panel with: avid web"
 msg ""
-msg "IMPORTANT: If you are currently inside fish, do NOT run: source ~/.bashrc"
-msg "Instead restart Termux, or run: exec bash -i"
-msg ""
-msg "Menu option 1 = final Avid Kiya Termux banner + fish/batman"
-msg "Run professional hub with: avid"
-msg "Run web panel with: avid web"
-msg "Menu option 3 = install/patch Ubuntu + MiMo + Ubuntu fish/batman, then option 2 runs Ubuntu"
+msg "Restart Termux or run: exec bash -i"
