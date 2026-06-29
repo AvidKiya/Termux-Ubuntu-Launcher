@@ -11,7 +11,7 @@
 pkg update -y
 pkg install -y git
 
-git clone https://github.com/YOUR_USERNAME/avid-termux-ubuntu-launcher.git
+git clone https://github.com/AvidKiya/Termux-Ubuntu-Launcher.git
 cd avid-termux-ubuntu-launcher
 bash install.sh
 ```
@@ -243,3 +243,30 @@ Open:
 ```text
 http://127.0.0.1:8765
 ```
+
+
+## AvidKiya Final Vision
+
+Repository: https://github.com/AvidKiya/Termux-Ubuntu-Launcher
+
+Author / handle: @AvidKiya
+
+Startup can ask which experience you want:
+
+1. App Mode - opens the mobile local web app
+2. CLI Mode - classic Termux/Ubuntu launcher
+3. Web Panel
+4. Full DevHub terminal menu
+5. Normal shell
+
+Set it in `~/.termux-avid-kiya/config`:
+
+```bash
+AK_STARTUP_MODE="ask"   # ask, app, cli, web, shell
+```
+
+### AI Agent Policy
+
+AvidKiya DevHub supports AI tools through safe and legitimate methods: official APIs, official CLIs, OAuth/device login when provided by vendors, local models, and user-provided configuration. It does not scrape browser tokens, steal sessions, bypass paid APIs, or automate logins in a way that violates service terms. This keeps the project safe for GitHub, university review, and public use.
+
+Planned safe agent features: multi-provider routing, MiMo/Claude/Gemini CLI adapters, local model adapters, project memory, task planning, tool calling with user approval, and parallel model comparison using authorized providers.

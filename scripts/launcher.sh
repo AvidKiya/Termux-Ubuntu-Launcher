@@ -10,6 +10,9 @@ AK_USE_LOLCAT="1"
 AK_AUTO_FISH_AFTER_TERMUX="1"
 AK_AUTO_FISH_AFTER_UBUNTU="1"
 AK_UBUNTU_DISTRO="ubuntu"
+AK_STARTUP_MODE="ask"
+AK_WEB_HOST="127.0.0.1"
+AK_WEB_PORT="8765"
 [ -f "$AK_CONFIG" ] && . "$AK_CONFIG"
 export PATH="$AK_APP_DIR/bin:$PATH"
 export LANG="${LANG:-C.UTF-8}"
@@ -143,6 +146,37 @@ ak_installer(){
   ak_pause
 }
 
+
+ak_start_web_app(){
+  if [ -x "$AK_AVID" ]; then "$AK_AVID" web-start; else avid web-start; fi
+}
+
+ak_start_mode_menu(){
+  clear
+  cat <<'MODE' | ak_color
+╔════════════════════════════════════════════════════════════╗
+║                  AvidKiya DevHub App                      ║
+║        Mobile App / Classic CLI / Web / Shell             ║
+╚════════════════════════════════════════════════════════════╝
+
+1. 📱 App Mode - open mobile web app
+2. 💻 CLI Mode - classic Termux/Ubuntu launcher
+3. 🌐 Web Panel - start local web only
+4. 🚀 Full DevHub terminal menu
+5. 🐚 Normal shell
+MODE
+  printf '\nChoose mode [1-5]: '
+  read -r m
+  case "$m" in
+    1) ak_start_web_app ;;
+    2) ak_menu ;;
+    3) ak_start_web_app ;;
+    4) if [ -x "$AK_AVID" ]; then "$AK_AVID" menu; else avid menu; fi ;;
+    5) clear ;;
+    *) ak_menu ;;
+  esac
+}
+
 ak_menu(){ clear; ak_menu_art | ak_color; printf '\nChoose option [1-5]: '; read -r c; case "$c" in 1) ak_termux_banner;; 2) ak_ubuntu_banner_and_shell;; 3) ak_installer;; 4) clear;; 5) if [ -x "$AK_AVID" ]; then "$AK_AVID" menu; else avid menu; fi;; *) echo Invalid;; esac; }
 
-case "$-" in *i*) if [ -z "${AK_LAUNCHER_SHOWN:-}" ] && [ -n "${TERMUX_VERSION:-}${PREFIX:-}" ]; then export AK_LAUNCHER_SHOWN=1; ak_menu; fi;; esac
+case "$-" in *i*) if [ -z "${AK_LAUNCHER_SHOWN:-}" ] && [ -n "${TERMUX_VERSION:-}${PREFIX:-}" ]; then export AK_LAUNCHER_SHOWN=1; case "${AK_STARTUP_MODE:-ask}" in app) ak_start_web_app;; cli) ak_menu;; web) ak_start_web_app;; shell) clear;; *) ak_start_mode_menu;; esac; fi;; esac

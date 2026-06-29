@@ -7,6 +7,7 @@ AK_APP_DIR="${AK_APP_DIR:-$HOME/.termux-avid-kiya}"
 AK_CONFIG="$AK_APP_DIR/config"
 AK_LOG_DIR="$AK_APP_DIR/logs"
 AK_WEB_DIR="$AK_APP_DIR/web"
+AK_WEB_PID="$AK_APP_DIR/web.pid"
 mkdir -p "$AK_LOG_DIR"
 
 AK_WTTR_LOCATION="36.46,52.86"
@@ -27,6 +28,46 @@ run_termux_pkg(){ log "TERMUX: pkg install $*"; pkg install -y "$@" 2>&1 | tee -
 ubuntu_ok(){ has proot-distro && proot-distro login "${AK_UBUNTU_DISTRO}" -- /bin/true >/dev/null 2>&1; }
 ubuntu_exec(){ proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -lc "$*"; }
 ubuntu_run_logged(){ log "UBUNTU: $*"; proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -lc "$*" 2>&1 | tee -a "$AK_LOG_DIR/ubuntu-tools.log"; }
+
+
+web_install_flask(){
+  python - <<'FLASK_CHECK' >/dev/null 2>&1
+import flask
+FLASK_CHECK
+  if [ $? -ne 0 ]; then
+    log "Installing Flask for local web app..."
+    python -m pip install --user flask >/dev/null 2>&1 || pip install flask >/dev/null 2>&1 || true
+  fi
+}
+web_start_bg(){
+  if [ ! -f "$AK_WEB_DIR/app.py" ]; then echo "Web files not found: $AK_WEB_DIR"; return 1; fi
+  if [ -f "$AK_WEB_PID" ] && kill -0 "$(cat "$AK_WEB_PID")" >/dev/null 2>&1; then
+    echo "Web app already running: http://${AK_WEB_HOST}:${AK_WEB_PORT}"
+  else
+    web_install_flask
+    log "Starting web app in background..."
+    (cd "$AK_WEB_DIR" && AK_APP_DIR="$AK_APP_DIR" AK_WEB_HOST="$AK_WEB_HOST" AK_WEB_PORT="$AK_WEB_PORT" nohup python app.py >> "$AK_LOG_DIR/web.log" 2>&1 & echo $! > "$AK_WEB_PID")
+    sleep 1
+    echo "Web app: http://${AK_WEB_HOST}:${AK_WEB_PORT}"
+  fi
+  if has termux-open-url; then termux-open-url "http://${AK_WEB_HOST}:${AK_WEB_PORT}" >/dev/null 2>&1 || true; fi
+}
+web_stop(){
+  if [ -f "$AK_WEB_PID" ] && kill -0 "$(cat "$AK_WEB_PID")" >/dev/null 2>&1; then
+    kill "$(cat "$AK_WEB_PID")" || true
+    rm -f "$AK_WEB_PID"
+    echo "Web app stopped."
+  else
+    echo "Web app is not running."
+  fi
+}
+web_status(){
+  if [ -f "$AK_WEB_PID" ] && kill -0 "$(cat "$AK_WEB_PID")" >/dev/null 2>&1; then
+    echo "running: http://${AK_WEB_HOST}:${AK_WEB_PORT} pid=$(cat "$AK_WEB_PID")"
+  else
+    echo "stopped"
+  fi
+}
 
 banner(){ cat <<'BANNER_EOF' | color
 ╔════════════════════════════════════════════════════════════╗
@@ -210,14 +251,25 @@ case "$c" in
 4) confirm_auth || { pause; continue; }; read -rp "URL/domain: " u; ubuntu_exec "whatweb '$u'"; pause;;
 5) break;; esac; done; }
 
-web_menu(){ clear; banner; cat <<WEB_EOF
-🌐 Local Web Control Panel
+web_menu(){
+while true; do clear; banner; cat <<WEB_EOF
+🌐 Local Web Control Panel / Mobile App
 URL: http://${AK_WEB_HOST}:${AK_WEB_PORT}
+
+1. Start mobile web app in background and open browser
+2. Start web app in foreground
+3. Stop background web app
+4. Status
+5. Back
 WEB_EOF
-if [ ! -f "$AK_WEB_DIR/app.py" ]; then echo "Web files not found: $AK_WEB_DIR"; pause; return; fi
-if ! has python; then pkg install -y python; fi
-python -m pip install --user flask >/dev/null 2>&1 || pip install flask >/dev/null 2>&1 || true
-cd "$AK_WEB_DIR" && AK_APP_DIR="$AK_APP_DIR" AK_WEB_HOST="$AK_WEB_HOST" AK_WEB_PORT="$AK_WEB_PORT" python app.py
+read -rp "Choose: " c
+case "$c" in
+1) web_start_bg; pause;;
+2) web_install_flask; cd "$AK_WEB_DIR" && AK_APP_DIR="$AK_APP_DIR" AK_WEB_HOST="$AK_WEB_HOST" AK_WEB_PORT="$AK_WEB_PORT" python app.py; pause;;
+3) web_stop; pause;;
+4) web_status; pause;;
+5) break;; esac
+done
 }
 
 health_once(){ clear; banner; echo "🩺 Health Check"; echo; status_line; echo; echo "Termux tools:"; for t in fish curl git ruby lolcat proot-distro python; do has "$t" && echo "[✓] $t" || echo "[ ] $t"; done; echo; echo "Ubuntu tools:"; cyber_health; }
@@ -226,7 +278,7 @@ settings_menu(){ ${EDITOR:-nano} "$AK_CONFIG"; }
 logs_menu(){ clear; ls -lh "$AK_LOG_DIR"; echo; read -rp "Open log file name or Enter back: " f; [ -n "$f" ] && ${PAGER:-less} "$AK_LOG_DIR/$f"; }
 
 case "${1:-menu}" in
- menu) main_menu;; web) web_menu;; health) health_menu;; health-once) health_once;; security|cyber) cyber_menu;; ai) ai_menu;; ubuntu) ubuntu_menu;; termux) termux_menu;;
+ menu) main_menu;; web) web_menu;; web-start) web_start_bg;; web-stop) web_stop;; web-status) web_status;; health) health_menu;; health-once) health_once;; security|cyber) cyber_menu;; ai) ai_menu;; ubuntu) ubuntu_menu;; termux) termux_menu;;
  ubuntu-patch) patch_ubuntu_full;;
  ai-mimo) install_mimo;; ai-claude) install_claude;; ai-gemini) install_gemini;; ai-aider) ubuntu_run_logged 'apt install -y pipx python3-venv; pipx ensurepath; pipx install aider-chat || pip install -U aider-chat';; ai-all) install_mimo; install_claude; install_gemini; ubuntu_run_logged 'apt install -y pipx python3-venv; pipx ensurepath; pipx install aider-chat || pip install -U aider-chat';;
  dev-all) ubuntu_run_logged 'apt install -y nodejs npm python3 python3-pip python3-venv pipx git tmux htop tree jq ripgrep fd-find bat fzf screenfetch figlet ruby build-essential; npm install -g npm@latest pnpm yarn typescript ts-node nodemon || true';;

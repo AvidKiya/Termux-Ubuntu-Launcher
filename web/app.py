@@ -109,6 +109,10 @@ def index():
     l=lang(); data=cached_status(); resp=make_response(render_template('dashboard.html', t=I18N[l], lang=l, s=data['status'], age=int(time.time()-data.get('time',0)) if data.get('time') else None, page='dashboard'))
     resp.set_cookie('ak_lang', l, max_age=60*60*24*365)
     return resp
+@app.route('/agent')
+def agent():
+    l=lang(); return render_template('agent.html', t=I18N[l], lang=l, s=cached_status()['status'], page='agent')
+
 @app.route('/ai')
 def ai(): l=lang(); return render_template('ai.html', t=I18N[l], lang=l, s=cached_status()['status'], page='ai')
 @app.route('/cyber')
