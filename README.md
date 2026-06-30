@@ -270,3 +270,32 @@ AK_STARTUP_MODE="ask"   # ask, app, cli, web, shell
 AvidKiya DevHub supports AI tools through safe and legitimate methods: official APIs, official CLIs, OAuth/device login when provided by vendors, local models, and user-provided configuration. It does not scrape browser tokens, steal sessions, bypass paid APIs, or automate logins in a way that violates service terms. This keeps the project safe for GitHub, university review, and public use.
 
 Planned safe agent features: multi-provider routing, MiMo/Claude/Gemini CLI adapters, local model adapters, project memory, task planning, tool calling with user approval, and parallel model comparison using authorized providers.
+
+
+## Local AI Models / Offline Agent
+
+AvidKiya DevHub can run offline/private GGUF models through llama.cpp inside Ubuntu.
+
+Open:
+
+```bash
+avid local-ai
+```
+
+Features:
+
+- install/build llama.cpp
+- download recommended small GGUF models
+- download custom GGUF URL
+- run prompt locally
+- start OpenAI-compatible local server
+- configure AvidKiya Agent to use `llama_local`
+
+Recommended phone-friendly models:
+
+- TinyLlama 1.1B Chat Q4_K_M
+- Qwen2.5 0.5B Instruct Q4_K_M
+- Qwen2.5 1.5B Instruct Q4_K_M
+- Phi-3 Mini 4K Instruct Q4, heavier
+
+This requires no API key and works offline after the model is downloaded.

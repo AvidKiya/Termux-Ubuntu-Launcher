@@ -13,10 +13,12 @@ AK_UBUNTU_DISTRO="ubuntu"
 AK_STARTUP_MODE="ask"
 AK_WEB_HOST="127.0.0.1"
 AK_WEB_PORT="8765"
+AK_CLI_ANIMATION="1"
 [ -f "$AK_CONFIG" ] && . "$AK_CONFIG"
 export PATH="$AK_APP_DIR/bin:$PATH"
 export LANG="${LANG:-C.UTF-8}"
 export LC_ALL="${LC_ALL:-C.UTF-8}"
+LC_RESET=$'\033[0m'; LC_DIM=$'\033[2m'; LC_BOLD=$'\033[1m'; LC_CYAN=$'\033[38;5;51m'; LC_PURPLE=$'\033[38;5;141m'; LC_ORANGE=$'\033[38;5;208m'; LC_GOLD=$'\033[38;5;220m'
 
 ak_has(){ command -v "$1" >/dev/null 2>&1; }
 ak_color(){ if [ "${AK_USE_LOLCAT:-1}" = "1" ] && ak_has lolcat; then lolcat; else cat; fi; }
@@ -147,36 +149,57 @@ ak_installer(){
 }
 
 
+
+ak_key_select(){
+  local title="$1"; shift
+  local opts=("$@") selected=0 key count=${#opts[@]}
+  while true; do
+    clear
+    printf "%b\n" "${LC_DIM}✧        ✦              ✧                 ✦${LC_RESET}"
+    printf "%b\n" ""
+    printf "%b\n" "                 ${LC_DIM}AvidKiya${LC_RESET}"
+    printf "%b\n" "            ${LC_ORANGE}AVID${LC_RESET} ${LC_BOLD}DEVHUB${LC_RESET} ${LC_DIM}APP${LC_RESET}"
+    printf "%b\n" ""
+    printf "%b\n" "${LC_DIM}╭──────────────────────────────────────────────────────────╮${LC_RESET}"
+    printf "%b\n" "${LC_DIM}│${LC_RESET} ${LC_BOLD}${title}${LC_RESET}"
+    printf "%b\n" "${LC_DIM}├──────────────────────────────────────────────────────────┤${LC_RESET}"
+    local i
+    for i in "${!opts[@]}"; do
+      if [ "$i" -eq "$selected" ]; then printf "%b\n" "${LC_DIM}│${LC_RESET} ${LC_ORANGE}➜${LC_RESET} ${LC_BOLD}${opts[$i]}${LC_RESET}"; else printf "%b\n" "${LC_DIM}│${LC_RESET}   ${opts[$i]}"; fi
+    done
+    printf "%b\n" "${LC_DIM}╰──────────────────────────────────────────────────────────╯${LC_RESET}"
+    printf "%b\n" "${LC_DIM}↑/↓ move   Enter select   q shell   @AvidKiya${LC_RESET}"
+    IFS= read -rsn1 key
+    if [[ $key == $'\x1b' ]]; then
+      read -rsn2 key
+      case "$key" in '[A') ((selected--)); [ "$selected" -lt 0 ] && selected=$((count-1));; '[B') ((selected++)); [ "$selected" -ge "$count" ] && selected=0;; esac
+    elif [[ $key == "" ]]; then return $((selected+1))
+    elif [[ $key == q || $key == Q ]]; then return 255
+    elif [[ $key =~ [0-9] ]]; then local n="$key"; [ "$n" -ge 1 ] 2>/dev/null && [ "$n" -le "$count" ] 2>/dev/null && return "$n"; fi
+  done
+}
+
 ak_start_web_app(){
   if [ -x "$AK_AVID" ]; then "$AK_AVID" web-start; else avid web-start; fi
 }
 
 ak_start_mode_menu(){
-  clear
-  cat <<'MODE' | ak_color
-╔════════════════════════════════════════════════════════════╗
-║                  AvidKiya DevHub App                      ║
-║        Mobile App / Classic CLI / Web / Shell             ║
-╚════════════════════════════════════════════════════════════╝
-
-1. 📱 App Mode - open mobile web app
-2. 💻 CLI Mode - classic Termux/Ubuntu launcher
-3. 🌐 Web Panel - start local web only
-4. 🚀 Full DevHub terminal menu
-5. 🐚 Normal shell
-MODE
-  printf '\nChoose mode [1-5]: '
-  read -r m
-  case "$m" in
+  ak_key_select "Choose startup experience" \
+    "📱 App Mode - open mobile web app" \
+    "💻 CLI Mode - classic Termux/Ubuntu launcher" \
+    "🌐 Web Panel - start local web app" \
+    "🚀 Full DevHub terminal menu" \
+    "🐚 Normal Shell"
+  case $? in
     1) ak_start_web_app ;;
     2) ak_menu ;;
     3) ak_start_web_app ;;
     4) if [ -x "$AK_AVID" ]; then "$AK_AVID" menu; else avid menu; fi ;;
-    5) clear ;;
+    5|255) clear ;;
     *) ak_menu ;;
   esac
 }
 
-ak_menu(){ clear; ak_menu_art | ak_color; printf '\nChoose option [1-5]: '; read -r c; case "$c" in 1) ak_termux_banner;; 2) ak_ubuntu_banner_and_shell;; 3) ak_installer;; 4) clear;; 5) if [ -x "$AK_AVID" ]; then "$AK_AVID" menu; else avid menu; fi;; *) echo Invalid;; esac; }
+ak_menu(){ clear; ak_menu_art | ak_color; printf '\n%b' "${LC_GOLD}Choose option [1-5]${LC_RESET} ${LC_DIM}>${LC_RESET} "; read -r c; case "$c" in 1) ak_termux_banner;; 2) ak_ubuntu_banner_and_shell;; 3) ak_installer;; 4) clear;; 5) if [ -x "$AK_AVID" ]; then "$AK_AVID" menu; else avid menu; fi;; *) echo Invalid;; esac; }
 
 case "$-" in *i*) if [ -z "${AK_LAUNCHER_SHOWN:-}" ] && [ -n "${TERMUX_VERSION:-}${PREFIX:-}" ]; then export AK_LAUNCHER_SHOWN=1; case "${AK_STARTUP_MODE:-ask}" in app) ak_start_web_app;; cli) ak_menu;; web) ak_start_web_app;; shell) clear;; *) ak_start_mode_menu;; esac; fi;; esac

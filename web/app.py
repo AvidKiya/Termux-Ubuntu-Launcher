@@ -39,6 +39,8 @@ ACTIONS={
  'cyber_reverse': {'cmd':'avid cyber-reverse','title':'Reverse Engineering Pack'},
  'cyber_full': {'cmd':'avid cyber-full','title':'Cybersecurity Full Pack'},
  'health': {'cmd':'avid health-once','title':'Health Check'},
+ 'local_install': {'cmd':'avid local-ai-install','title':'Install llama.cpp'},
+ 'local_server': {'cmd':'avid local-ai-server','title':'Start local llama.cpp server'},
 }
 
 def lang():
@@ -112,6 +114,10 @@ def index():
 @app.route('/agent')
 def agent():
     l=lang(); return render_template('agent.html', t=I18N[l], lang=l, s=cached_status()['status'], page='agent')
+
+@app.route('/local-ai')
+def local_ai_page():
+    l=lang(); return render_template('local_ai.html', t=I18N[l], lang=l, s=cached_status()['status'], page='local')
 
 @app.route('/ai')
 def ai(): l=lang(); return render_template('ai.html', t=I18N[l], lang=l, s=cached_status()['status'], page='ai')

@@ -27,7 +27,9 @@ DEFAULT_CONFIG = {
     "groq": {"type":"openai_compatible", "base_url":"https://api.groq.com/openai/v1/chat/completions", "model":"llama-3.1-70b-versatile", "api_key_env":"GROQ_API_KEY"},
     "mimo_cli": {"type":"cli", "cmd":"mimo", "note":"interactive CLI; use terminal for full experience"},
     "claude_cli": {"type":"cli", "cmd":"claude", "note":"official Claude Code CLI"},
-    "gemini_cli": {"type":"cli", "cmd":"gemini", "note":"official Gemini CLI"}
+    "gemini_cli": {"type":"cli", "cmd":"gemini", "note":"official Gemini CLI"},
+    "llama_local": {"type":"openai_compatible", "base_url":"http://127.0.0.1:8080/v1/chat/completions", "model":"local-model", "api_key_env":""},
+    "llama_cli": {"type":"llama_cpp_cli", "binary":"/root/.avid-devhub/src/llama.cpp/build/bin/llama-cli", "models_dir":"/root/.avid-devhub/models"}
   }
 }
 
@@ -47,9 +49,11 @@ def call_mock(name, prompt, role):
     return f"[{name}/{role}]\nI received the task and produced a structured response.\n\nTask summary:\n{prompt[:900]}\n\nKey points:\n- Analyze requirements\n- Produce safe implementation plan\n- Return concise actionable output\n"
 
 def call_openai_compatible(provider, prompt):
-    key = os.environ.get(provider.get("api_key_env",""), "")
-    if not key:
-        return f"[missing API key: {provider.get('api_key_env')}] Set it in environment/config, then retry."
+    key_env = provider.get("api_key_env", "")
+    key = os.environ.get(key_env, "") if key_env else ""
+    # Local OpenAI-compatible servers such as llama.cpp do not need an API key.
+    if key_env and not key:
+        return f"[missing API key: {key_env}] Set it in environment/config, then retry."
     payload = {
         "model": provider.get("model"),
         "messages": [
@@ -59,13 +63,32 @@ def call_openai_compatible(provider, prompt):
         "temperature": 0.3
     }
     data = json.dumps(payload).encode()
-    req = urllib.request.Request(provider.get("base_url"), data=data, headers={"Content-Type":"application/json", "Authorization":f"Bearer {key}"})
+    headers={"Content-Type":"application/json"}
+    if key:
+        headers["Authorization"] = f"Bearer {key}"
+    req = urllib.request.Request(provider.get("base_url"), data=data, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=90) as r:
             obj=json.loads(r.read().decode())
         return obj["choices"][0]["message"]["content"]
     except Exception as e:
         return f"[provider error] {e}"
+
+def call_llama_cpp_cli(provider, prompt):
+    import glob
+    binary = provider.get("binary", "llama-cli")
+    models_dir = provider.get("models_dir", str(AGENT_DIR/"models"))
+    models = sorted(glob.glob(str(pathlib.Path(models_dir)/"*.gguf")))
+    if not models:
+        return f"[local model missing] No .gguf model found in {models_dir}. Download one from Local AI Models menu."
+    model = models[0]
+    if not pathlib.Path(binary).exists():
+        return f"[llama.cpp missing] Binary not found: {binary}. Run Local AI Models > Install/Build llama.cpp."
+    try:
+        p = subprocess.run([binary, "-m", model, "-p", prompt, "-n", "512"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=180)
+        return p.stdout
+    except Exception as e:
+        return f"[llama.cpp error] {e}"
 
 def call_cli(provider, prompt):
     cmd = provider.get("cmd")
@@ -81,6 +104,7 @@ def call_provider(cfg, name, prompt, role="worker"):
     if typ=="mock": return call_mock(name, prompt, role)
     if typ=="openai_compatible": return call_openai_compatible(p, prompt)
     if typ=="cli": return call_cli(p, prompt)
+    if typ=="llama_cpp_cli": return call_llama_cpp_cli(p, prompt)
     return f"[unsupported provider type: {typ}]"
 
 def run_task(prompt):
