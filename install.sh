@@ -5,11 +5,13 @@ APP_DIR="$HOME/.termux-avid-kiya"
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAUNCHER_SRC="$PROJECT_DIR/scripts/launcher.sh"
 AVID_SRC="$PROJECT_DIR/scripts/avid.sh"
+TUI_SRC="$PROJECT_DIR/scripts/avid_tui.py"
 WEB_SRC="$PROJECT_DIR/web"
 AGENT_SRC="$PROJECT_DIR/agent"
 CONFIG_SRC="$PROJECT_DIR/config.example"
 LAUNCHER_DST="$APP_DIR/launcher.sh"
 AVID_DST="$APP_DIR/bin/avid"
+TUI_DST="$APP_DIR/bin/avid-tui"
 WEB_DST="$APP_DIR/web"
 AGENT_DST="$APP_DIR/agent"
 CONFIG_DST="$APP_DIR/config"
@@ -55,6 +57,7 @@ fi
 
 [ -f "$LAUNCHER_SRC" ] || { msg "[!] Missing scripts/launcher.sh"; exit 1; }
 [ -f "$AVID_SRC" ] || { msg "[!] Missing scripts/avid.sh"; exit 1; }
+[ -f "$TUI_SRC" ] || { msg "[!] Missing scripts/avid_tui.py"; exit 1; }
 
 msg "[+] Creating app directory: $APP_DIR"
 mkdir -p "$APP_DIR/bin"
@@ -99,11 +102,17 @@ cp "$LAUNCHER_SRC" "$LAUNCHER_DST"
 chmod +x "$LAUNCHER_DST"
 cp "$AVID_SRC" "$AVID_DST"
 chmod +x "$AVID_DST"
+cp "$TUI_SRC" "$TUI_DST"
+chmod +x "$TUI_DST"
+mkdir -p "$APP_DIR/scripts"
+cp "$TUI_SRC" "$APP_DIR/scripts/avid_tui.py"
+chmod +x "$APP_DIR/scripts/avid_tui.py"
 rm -rf "$WEB_DST"
 cp -R "$WEB_SRC" "$WEB_DST"
 rm -rf "$AGENT_DST"
 cp -R "$AGENT_SRC" "$AGENT_DST"
 [ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ] && ln -sf "$AVID_DST" "$PREFIX/bin/avid" || true
+[ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ] && ln -sf "$TUI_DST" "$PREFIX/bin/avid-tui" || true
 
 if [ ! -f "$CONFIG_DST" ]; then
   cp "$CONFIG_SRC" "$CONFIG_DST"
@@ -146,7 +155,8 @@ EOF2
 msg ""
 msg "[✓] Installed/updated successfully without reinstalling existing packages."
 msg "[i] Startup menu restored: Termux / Ubuntu / Installer / Normal / DevHub"
-msg "[i] Run full professional hub manually with: avid"
+msg "[i] Run MiMo-inspired professional TUI with: avid code"
+msg "[i] Run classic Bash hub manually with: avid menu"
 msg "[i] Run web panel with: avid web"
 msg ""
 msg "Restart Termux or run: exec bash -i"

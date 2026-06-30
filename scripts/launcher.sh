@@ -182,8 +182,16 @@ ak_key_select(){
 ak_start_web_app(){
   if [ -x "$AK_AVID" ]; then "$AK_AVID" web-start; else avid web-start; fi
 }
+ak_start_app_mode(){
+  if [ -x "$AK_AVID" ]; then "$AK_AVID" app; else avid app; fi
+}
 
 ak_start_mode_menu(){
+  # Prefer the richer Python curses TUI when available. It is MiMo-inspired
+  # with starfield, centered logo, input box, slash commands and arrow selection.
+  if [ "${AK_CLI_THEME:-mimo}" = "mimo" ]; then
+    if [ -x "$AK_AVID" ]; then "$AK_AVID" code --startup && return; elif command -v avid >/dev/null 2>&1; then avid code --startup && return; fi
+  fi
   ak_key_select "Choose startup experience" \
     "📱 App Mode - open mobile web app" \
     "💻 CLI Mode - classic Termux/Ubuntu launcher" \
@@ -191,15 +199,15 @@ ak_start_mode_menu(){
     "🚀 Full DevHub terminal menu" \
     "🐚 Normal Shell"
   case $? in
-    1) ak_start_web_app ;;
+    1) ak_start_app_mode ;;
     2) ak_menu ;;
     3) ak_start_web_app ;;
-    4) if [ -x "$AK_AVID" ]; then "$AK_AVID" menu; else avid menu; fi ;;
+    4) if [ -x "$AK_AVID" ]; then "$AK_AVID" code; else avid code; fi ;;
     5|255) clear ;;
     *) ak_menu ;;
   esac
 }
 
-ak_menu(){ clear; ak_menu_art | ak_color; printf '\n%b' "${LC_GOLD}Choose option [1-5]${LC_RESET} ${LC_DIM}>${LC_RESET} "; read -r c; case "$c" in 1) ak_termux_banner;; 2) ak_ubuntu_banner_and_shell;; 3) ak_installer;; 4) clear;; 5) if [ -x "$AK_AVID" ]; then "$AK_AVID" menu; else avid menu; fi;; *) echo Invalid;; esac; }
+ak_menu(){ clear; ak_menu_art | ak_color; printf '\n%b' "${LC_GOLD}Choose option [1-5]${LC_RESET} ${LC_DIM}>${LC_RESET} "; read -r c; case "$c" in 1) ak_termux_banner;; 2) ak_ubuntu_banner_and_shell;; 3) ak_installer;; 4) clear;; 5) if [ -x "$AK_AVID" ]; then "$AK_AVID" code; else avid code; fi;; *) echo Invalid;; esac; }
 
-case "$-" in *i*) if [ -z "${AK_LAUNCHER_SHOWN:-}" ] && [ -n "${TERMUX_VERSION:-}${PREFIX:-}" ]; then export AK_LAUNCHER_SHOWN=1; case "${AK_STARTUP_MODE:-ask}" in app) ak_start_web_app;; cli) ak_menu;; web) ak_start_web_app;; shell) clear;; *) ak_start_mode_menu;; esac; fi;; esac
+case "$-" in *i*) if [ -z "${AK_LAUNCHER_SHOWN:-}" ] && [ -n "${TERMUX_VERSION:-}${PREFIX:-}" ]; then export AK_LAUNCHER_SHOWN=1; case "${AK_STARTUP_MODE:-ask}" in app) ak_start_app_mode;; cli) ak_menu;; web) ak_start_web_app;; shell) clear;; *) ak_start_mode_menu;; esac; fi;; esac

@@ -1,1 +1,22 @@
-{% extends 'base.html' %}{% block content %}<section class="page-head danger"><h1>🛡️ {{t.cyber}}</h1><p>{{t.ethics}}</p></section><section class="tool-list">{% for id,title,desc,icon in [('cyber_essential','Essential','nmap, netcat, whois, DNS, whatweb','🧭'),('cyber_recon','Recon','network mapping and reconnaissance','📡'),('cyber_web','Web Security','nikto, sqlmap, gobuster, ffuf, dirsearch','🌐'),('cyber_hash','Hash Audit','john, hashid, hashcat when available','🔐'),('cyber_ctf','CTF / Pwn','gdb, radare2, pwntools, checksec','🧪'),('cyber_forensics','Forensics','binwalk, exiftool, steghide, zsteg','🧬'),('cyber_reverse','Reverse Engineering','gdb, radare2, patchelf','🐞'),('cyber_full','Full Cyber Pack','Install every legal lab profile','🚀')] %}<article class="tool"><div class="ico">{{icon}}</div><div><h3>{{title}}</h3><p>{{desc}}</p></div><form method="post" action="/action/{{id}}"><button>{{t.install}}</button></form></article>{% endfor %}</section>{% endblock %}
+{% extends 'base.html' %}{% block content %}
+<section class="page-head danger"><h1>🛡️ {{t.cyber}}</h1><p>{{t.ethics}}</p><p class="muted">واقعی و کاربردی، اما فقط برای سیستم‌های خودت، CTF، دانشگاه، لَب و تست دارای مجوز.</p></section>
+<section class="tool-list">
+{% for id,title,desc,icon in [
+('cyber_essential','Essential','nmap, netcat, whois, DNS, traceroute, whatweb','🧭'),
+('cyber_recon','Recon & Network Mapping','nmap, masscan/rustscan optional, wafw00f, network discovery','📡'),
+('cyber_web','Web Hacking','nikto, sqlmap, gobuster, ffuf, dirsearch, httpie','🌐'),
+('cyber_hash','Password / Hash Audit','john, hashcat when available, hashid, crunch','🔐'),
+('cyber_ctf','CTF / Pwn','gdb, radare2, pwntools, checksec, binutils','🧪'),
+('cyber_forensics','Forensics / Stego','binwalk, exiftool, foremost, steghide, zsteg','🧬'),
+('cyber_reverse','Reverse Engineering','gdb, radare2, strace, ltrace, patchelf','🐞'),
+('cyber_osint','OSINT','theHarvester, SpiderFoot, holehe, whois/DNS tools','🕵️'),
+('cyber_api','API Testing','httpie, jq, arjun, curl/wget API helpers','🔌'),
+('cyber_mobile','Android/Mobile Hacking Lab','apktool, jadx, adb, objection when possible','📱'),
+('cyber_wordlists','Wordlists','SecLists/wordlists, rockyou, crunch, cewl','📚'),
+('cyber_advanced','Advanced Optional','hydra, metasploit, nuclei, amass, exploitdb/searchsploit','☠️'),
+('cyber_full','FULL Pentest/Hack Lab','Install all core legal lab profiles','🚀')
+] %}
+<article class="tool"><div class="ico">{{icon}}</div><div><h3>{{title}}</h3><p>{{desc}}</p></div><form method="post" action="/action/{{id}}"><button>{{t.install}}</button></form></article>
+{% endfor %}
+</section>
+{% endblock %}

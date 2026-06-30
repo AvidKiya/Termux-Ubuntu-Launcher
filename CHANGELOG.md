@@ -1,5 +1,27 @@
 # Changelog
 
+## v3.10.0 - Android-like App Mode + Pentest/Hack Lab
+
+- Added `avid app`: starts localhost web panel and opens it on Android as an app-like experience.
+- Added `avid app-shortcuts`: creates Termux:Widget shortcuts for DevHub App, CLI and Web Panel.
+- Added PWA manifest and SVG icon for mobile standalone/browser install support.
+- Startup `App Mode` now calls the new app flow instead of only web-start.
+- Renamed security section to `تست نفوذ / هک`.
+- Added real authorized lab packs: OSINT, API Testing, Android/Mobile Hacking Lab, Wordlists and Advanced Optional.
+- Expanded web panel Pentest/Hack section and status checks.
+
+
+## v3.9.0 - MiMo-inspired AvidKiya DevHub CODE TUI
+
+- Added `scripts/avid_tui.py`, a dedicated Python curses terminal UI inspired by the MiMo Code experience.
+- Added `avid code` / `avid tui` commands.
+- Startup selector now prefers the richer TUI when `AK_CLI_THEME="mimo"`.
+- Preserved the original classic Termux/Ubuntu launcher as a separate mode.
+- Added direct backend routes for all TUI sections so arrow-selected actions call real commands.
+- Fixed web backend routing safety: `web_start_bg`, `web-stop`, `web-status`, and foreground web mode are all explicit commands.
+- Installer now copies and symlinks `avid-tui` without reinstalling existing packages.
+
+
 ## 2.3.0 - 2026-06-29
 
 - Ubuntu now installs fish, Oh My Fish, and the batman theme too.

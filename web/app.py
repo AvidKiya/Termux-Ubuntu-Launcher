@@ -18,8 +18,8 @@ PORT = int(os.environ.get('AK_WEB_PORT','8765'))
 app = Flask(__name__)
 
 I18N = {
- 'fa': {'dir':'rtl','title':'Avid Kiya DevHub','subtitle':'مرکز کنترل ترموکس، اوبونتو، هوش مصنوعی، توسعه و امنیت','dashboard':'داشبورد','ai':'هوش مصنوعی','cyber':'امنیت','dev':'توسعه','ubuntu':'اوبونتو','settings':'تنظیمات','logs':'لاگ‌ها','tasks':'تسک‌ها','ok':'آماده','missing':'نیست','checking':'درحال بررسی','install':'نصب / تعمیر','run':'اجرا','quick':'میانبرها','status':'وضعیت','ethics':'فقط برای CTF، لَب دانشگاهی، سیستم‌های شخصی و تست دارای مجوز.','note':'برای ابزارهای تعاملی مثل MiMo و Claude از ترمینال avid استفاده کن. پنل وب برای نصب، تعمیر، وضعیت و لاگ‌هاست.','started':'تسک شروع شد. خروجی را در لاگ‌ها ببین.'},
- 'en': {'dir':'ltr','title':'Avid Kiya DevHub','subtitle':'Control center for Termux, Ubuntu, AI, Dev and Cybersecurity','dashboard':'Dashboard','ai':'AI','cyber':'Security','dev':'Dev','ubuntu':'Ubuntu','settings':'Settings','logs':'Logs','tasks':'Tasks','ok':'OK','missing':'Missing','checking':'Checking','install':'Install / Repair','run':'Run','quick':'Quick actions','status':'Status','ethics':'Use only for CTF, university labs, personal systems, and authorized testing.','note':'For interactive tools like MiMo and Claude use the avid terminal menu. Web panel is for install, repair, status and logs.','started':'Task started. Check logs.'}
+ 'fa': {'dir':'rtl','title':'Avid Kiya DevHub','subtitle':'مرکز کنترل ترموکس، اوبونتو، هوش مصنوعی، توسعه و امنیت','dashboard':'داشبورد','ai':'هوش مصنوعی','cyber':'تست نفوذ / هک','dev':'توسعه','ubuntu':'اوبونتو','settings':'تنظیمات','logs':'لاگ‌ها','tasks':'تسک‌ها','ok':'آماده','missing':'نیست','checking':'درحال بررسی','install':'نصب / تعمیر','run':'اجرا','quick':'میانبرها','status':'وضعیت','ethics':'فقط برای CTF، لَب دانشگاهی، سیستم‌های شخصی و تست دارای مجوز.','note':'برای ابزارهای تعاملی مثل MiMo و Claude از ترمینال avid استفاده کن. پنل وب برای نصب، تعمیر، وضعیت و لاگ‌هاست.','started':'تسک شروع شد. خروجی را در لاگ‌ها ببین.'},
+ 'en': {'dir':'ltr','title':'Avid Kiya DevHub','subtitle':'Control center for Termux, Ubuntu, AI, Dev and Cybersecurity','dashboard':'Dashboard','ai':'AI','cyber':'Pentest / Hack','dev':'Dev','ubuntu':'Ubuntu','settings':'Settings','logs':'Logs','tasks':'Tasks','ok':'OK','missing':'Missing','checking':'Checking','install':'Install / Repair','run':'Run','quick':'Quick actions','status':'Status','ethics':'Use only for CTF, university labs, personal systems, and authorized testing.','note':'For interactive tools like MiMo and Claude use the avid terminal menu. Web panel is for install, repair, status and logs.','started':'Task started. Check logs.'}
 }
 
 ACTIONS={
@@ -37,7 +37,12 @@ ACTIONS={
  'cyber_ctf': {'cmd':'avid cyber-ctf','title':'CTF / Pwn Pack'},
  'cyber_forensics': {'cmd':'avid cyber-forensics','title':'Forensics Pack'},
  'cyber_reverse': {'cmd':'avid cyber-reverse','title':'Reverse Engineering Pack'},
- 'cyber_full': {'cmd':'avid cyber-full','title':'Cybersecurity Full Pack'},
+ 'cyber_osint': {'cmd':'avid cyber-osint','title':'OSINT Pack'},
+ 'cyber_api': {'cmd':'avid cyber-api','title':'API Testing Pack'},
+ 'cyber_mobile': {'cmd':'avid cyber-mobile','title':'Android/Mobile Hacking Lab Pack'},
+ 'cyber_wordlists': {'cmd':'avid cyber-wordlists','title':'Wordlists Pack'},
+ 'cyber_advanced': {'cmd':'avid cyber-advanced','title':'Advanced Pentest Pack'},
+ 'cyber_full': {'cmd':'avid cyber-full','title':'Pentest/Hack Full Lab Pack'},
  'health': {'cmd':'avid health-once','title':'Health Check'},
  'local_install': {'cmd':'avid local-ai-install','title':'Install llama.cpp'},
  'local_server': {'cmd':'avid local-ai-server','title':'Start local llama.cpp server'},
@@ -64,10 +69,10 @@ def compute_status():
     u=ubuntu_exists()
     s={'Termux': exists('pkg'), 'Ubuntu': u, 'Fish': exists('fish'), 'Web': True}
     if u:
-        checks={'MiMo':'command -v mimo >/dev/null 2>&1 || [ -x /root/.mimocode/bin/mimo ]','Claude':'command -v claude >/dev/null 2>&1','Gemini':'command -v gemini >/dev/null 2>&1','Aider':'command -v aider >/dev/null 2>&1','nmap':'command -v nmap >/dev/null 2>&1','sqlmap':'command -v sqlmap >/dev/null 2>&1','john':'command -v john >/dev/null 2>&1','radare2':'command -v radare2 >/dev/null 2>&1','binwalk':'command -v binwalk >/dev/null 2>&1'}
+        checks={'MiMo':'command -v mimo >/dev/null 2>&1 || [ -x /root/.mimocode/bin/mimo ]','Claude':'command -v claude >/dev/null 2>&1','Gemini':'command -v gemini >/dev/null 2>&1','Aider':'command -v aider >/dev/null 2>&1','nmap':'command -v nmap >/dev/null 2>&1','sqlmap':'command -v sqlmap >/dev/null 2>&1','john':'command -v john >/dev/null 2>&1','radare2':'command -v radare2 >/dev/null 2>&1','binwalk':'command -v binwalk >/dev/null 2>&1','hydra':'command -v hydra >/dev/null 2>&1','nuclei':'command -v nuclei >/dev/null 2>&1','apktool':'command -v apktool >/dev/null 2>&1','jadx':'command -v jadx >/dev/null 2>&1','theHarvester':'command -v theHarvester >/dev/null 2>&1 || command -v theharvester >/dev/null 2>&1'}
         for k,c in checks.items(): s[k]=ubuntu(c,2)
     else:
-        for k in ['MiMo','Claude','Gemini','Aider','nmap','sqlmap','john','radare2','binwalk']: s[k]=False
+        for k in ['MiMo','Claude','Gemini','Aider','nmap','sqlmap','john','radare2','binwalk','hydra','nuclei','apktool','jadx','theHarvester']: s[k]=False
     data={'time':time.time(),'status':s}
     CACHE.write_text(json.dumps(data), encoding='utf-8')
     return data
@@ -79,7 +84,7 @@ def cached_status(max_age=120):
             if time.time()-data.get('time',0) < max_age: return data
         except Exception: pass
     # Return a very fast optimistic shell-only status first if no cache.
-    data={'time':0,'status':{'Termux':exists('pkg'),'Ubuntu':False,'Fish':exists('fish'),'Web':True,'MiMo':False,'Claude':False,'Gemini':False,'Aider':False,'nmap':False,'sqlmap':False,'john':False,'radare2':False,'binwalk':False}}
+    data={'time':0,'status':{'Termux':exists('pkg'),'Ubuntu':False,'Fish':exists('fish'),'Web':True,'MiMo':False,'Claude':False,'Gemini':False,'Aider':False,'nmap':False,'sqlmap':False,'john':False,'radare2':False,'binwalk':False,'hydra':False,'nuclei':False,'apktool':False,'jadx':False,'theHarvester':False}}
     return data
 
 def start_task(name):

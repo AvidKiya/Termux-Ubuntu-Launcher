@@ -86,6 +86,73 @@ fish
 - Rewrites `~/.bashrc` from zero after backing it up
 - Ubuntu PATH/development patch for tools that need `patch`, `gcc`, `make`, etc.
 
+
+
+## Android-like App Mode / حالت شبیه APK
+
+App Mode starts the local web panel and opens it on Android like a mobile app:
+
+```bash
+avid app
+```
+
+Install Android home-screen shortcuts:
+
+```bash
+avid app-shortcuts
+```
+
+Then install **Termux:Widget** from F-Droid and add `AvidKiya DevHub App` to your Android home screen. This gives an APK-like launcher experience while keeping everything local in Termux.
+
+Modes:
+
+```text
+App  = start localhost web app + open browser/custom tab
+Web  = start localhost web panel only
+CLI  = AvidKiya terminal menu / avid code
+```
+
+## تست نفوذ / هک
+
+The security section is now named **تست نفوذ / هک** and includes real lab profiles: Essential, Recon, Web Hacking, Hash Audit, CTF/Pwn, Forensics, Reverse Engineering, OSINT, API Testing, Android/Mobile Hacking Lab, Wordlists, Advanced Optional and FULL Pack.
+
+Use only for your own systems, CTF, university labs, and authorized testing.
+
+## v3.9 AvidKiya DevHub CODE TUI
+
+The project now includes a dedicated MiMo-inspired terminal UI for AvidKiya DevHub:
+
+```bash
+avid code
+# or
+avid tui
+```
+
+It keeps the original classic launcher intact, but adds a richer full-screen terminal experience:
+
+- black starfield background
+- centered `AvidKiya / AVID DEVHUB CODE` logo
+- arrow-key menu selection and Enter confirm
+- command/input box like modern AI CLIs
+- slash command palette: `/web`, `/ai`, `/agent`, `/local`, `/ubuntu`, `/termux`, `/cyber`, `/dev`, `/ask PROMPT`
+- MiMo-style hint line: `tab switch mode   ctrl+p settings   @ attach file   $ subagent   / commands`
+
+Startup uses this TUI automatically when:
+
+```bash
+AK_STARTUP_MODE="ask"
+AK_CLI_THEME="mimo"
+```
+
+To force the old classic launcher:
+
+```bash
+nano ~/.termux-avid-kiya/config
+AK_CLI_THEME="classic"
+AK_STARTUP_MODE="cli"
+```
+
+
 ---
 
 ## Uninstall

@@ -1,0 +1,13 @@
+{
+  "name": "AvidKiya DevHub",
+  "short_name": "AvidKiya",
+  "start_url": "/?mode=app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050713",
+  "theme_color": "#070914",
+  "description": "Termux Ubuntu AI Dev Pentest mobile control panel",
+  "icons": [
+    {"src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
