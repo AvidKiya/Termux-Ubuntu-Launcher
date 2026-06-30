@@ -88,6 +88,51 @@ fish
 
 
 
+
+## PC / PowerShell / CMD / VS Code Support
+
+This repository now includes a cross-platform companion launcher for desktop terminals:
+
+```bash
+python scripts/avid_pc.py status
+python scripts/avid_pc.py app
+python scripts/avid_pc.py web
+python scripts/avid_pc.py cli
+```
+
+Windows PowerShell:
+
+```powershell
+.vid.ps1 status
+.vid.ps1 app
+.vid.ps1 cli
+```
+
+Windows CMD:
+
+```cmd
+avid.cmd status
+avid.cmd app
+avid.cmd cli
+```
+
+In VS Code Terminal, open the project folder and run the same commands. Termux/Ubuntu-only operations still require Termux/proot, but the UI, web panel, status and desktop helper flow work on PC.
+
+## Operational Web Panel
+
+The web panel is no longer only an installer dashboard. The `تست نفوذ / هک` page includes authorized run helpers for:
+
+- Quick nmap scan
+- Service/version nmap scan
+- DNS lookup
+- HTTP headers
+- WhatWeb fingerprint
+- WAFW00F check
+- WHOIS lookup
+- Nikto basic check
+
+Outputs are written as task logs in the web panel.
+
 ## Android-like App Mode / حالت شبیه APK
 
 App Mode starts the local web panel and opens it on Android like a mobile app:

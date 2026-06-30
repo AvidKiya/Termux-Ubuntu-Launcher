@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.11.0 - Operational Tools + PC/VS Code Support
+
+- Added smart Ubuntu package installer that checks `dpkg -s` first and installs only missing packages.
+- Replaced noisy `apt` output for security packs with cleaner summaries and logs.
+- Added operational authorized run helpers: nmap quick/service, dig, headers, whatweb, wafw00f, whois, nikto.
+- Web panel `تست نفوذ / هک` can now run authorized helpers and show output logs.
+- Added `scripts/avid_pc.py` plus `avid.ps1` and `avid.cmd` for PowerShell, CMD, Linux/macOS terminals and VS Code.
+- Installer now disables Termux MOTD noise with `.hushlogin`/motd backup where possible.
+- TUI now falls back to local project backend when not installed into Termux.
+
+
 ## v3.10.0 - Android-like App Mode + Pentest/Hack Lab
 
 - Added `avid app`: starts localhost web panel and opens it on Android as an app-like experience.

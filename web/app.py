@@ -47,6 +47,16 @@ ACTIONS={
  'local_install': {'cmd':'avid local-ai-install','title':'Install llama.cpp'},
  'local_server': {'cmd':'avid local-ai-server','title':'Start local llama.cpp server'},
 }
+RUN_TOOLS={
+ 'nmap_quick': {'tool':'nmap-quick','title':'Quick nmap scan'},
+ 'nmap_service': {'tool':'nmap','title':'Service/version nmap scan'},
+ 'dig': {'tool':'dig','title':'DNS lookup'},
+ 'headers': {'tool':'headers','title':'HTTP headers'},
+ 'whatweb': {'tool':'whatweb','title':'WhatWeb fingerprint'},
+ 'wafw00f': {'tool':'wafw00f','title':'WAFW00F check'},
+ 'whois': {'tool':'whois','title':'WHOIS lookup'},
+ 'nikto': {'tool':'nikto','title':'Nikto basic web check'},
+}
 
 def lang():
     l=request.args.get('lang') or request.cookies.get('ak_lang') or os.environ.get('AK_LANGUAGE','fa')
@@ -59,11 +69,18 @@ def run(cmd, timeout=2):
     except subprocess.TimeoutExpired:
         return False, ''
 
-def exists(cmd): return run(f'command -v {shlex.quote(cmd)} >/dev/null 2>&1', 1)[0]
+def exists(cmd):
+    if os.name == 'nt':
+        return subprocess.run(f'where {shlex.quote(cmd)}', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+    return run(f'command -v {shlex.quote(cmd)} >/dev/null 2>&1', 1)[0]
 
-def ubuntu_exists(): return run('proot-distro login ubuntu -- /bin/true >/dev/null 2>&1', 3)[0]
+def ubuntu_exists():
+    if not exists('proot-distro'): return False
+    return run('proot-distro login ubuntu -- /bin/true >/dev/null 2>&1', 3)[0]
 
-def ubuntu(cmd, timeout=3): return run(f'proot-distro login ubuntu -- bash -lc {shlex.quote(cmd)} >/dev/null 2>&1', timeout)[0]
+def ubuntu(cmd, timeout=3):
+    if not exists('proot-distro'): return False
+    return run(f'proot-distro login ubuntu -- bash -lc {shlex.quote(cmd)} >/dev/null 2>&1', timeout)[0]
 
 def compute_status():
     u=ubuntu_exists()
@@ -86,6 +103,22 @@ def cached_status(max_age=120):
     # Return a very fast optimistic shell-only status first if no cache.
     data={'time':0,'status':{'Termux':exists('pkg'),'Ubuntu':False,'Fish':exists('fish'),'Web':True,'MiMo':False,'Claude':False,'Gemini':False,'Aider':False,'nmap':False,'sqlmap':False,'john':False,'radare2':False,'binwalk':False,'hydra':False,'nuclei':False,'apktool':False,'jadx':False,'theHarvester':False}}
     return data
+
+
+def start_run_tool(tool_id, target):
+    meta=RUN_TOOLS.get(tool_id)
+    if not meta or not target: return None
+    safe=''.join(ch for ch in target if ch.isalnum() or ch in '._:/?=&%+#,@-')[:220]
+    if safe != target: return None
+    tid=datetime.datetime.now().strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:6]
+    log=LOG_DIR/f'run-{tool_id}-{tid}.log'
+    task=TASK_DIR/f'{tid}.json'
+    cmd=f"avid run-tool {shlex.quote(meta['tool'])} {shlex.quote(target)}"
+    task.write_text(json.dumps({'id':tid,'name':tool_id,'title':meta['title'],'cmd':cmd,'log':log.name,'status':'running','started':time.time()}), encoding='utf-8')
+    py_done="import json,pathlib,time;p=pathlib.Path(%r);d=json.loads(p.read_text());d['status']='done';d['finished']=time.time();p.write_text(json.dumps(d))" % str(task)
+    shell=f"echo '$ {cmd}'; echo 'Started: '$(date); echo; {cmd}; code=$?; echo; echo 'Finished: '$(date)' code='$code; python -c {shlex.quote(py_done)}"
+    subprocess.Popen(shell, shell=True, stdout=open(log,'a'), stderr=subprocess.STDOUT, cwd=str(APP_DIR))
+    return log.name
 
 def start_task(name):
     meta=ACTIONS.get(name)
@@ -157,6 +190,11 @@ def logs():
 @app.route('/action/<name>', methods=['POST'])
 def action(name):
     log=start_task(name)
+    return redirect(url_for('logs', file=log or 'web.log'))
+@app.route('/run-tool/<tool>', methods=['POST'])
+def run_tool_action(tool):
+    target=request.form.get('target','').strip()
+    log=start_run_tool(tool, target)
     return redirect(url_for('logs', file=log or 'web.log'))
 @app.route('/api/status')
 def api_status():

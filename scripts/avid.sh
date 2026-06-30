@@ -34,6 +34,27 @@ ubuntu_ok(){ has proot-distro && proot-distro login "${AK_UBUNTU_DISTRO}" -- /bi
 ubuntu_exec(){ proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -lc "$*"; }
 ubuntu_run_logged(){ log "UBUNTU: $*"; proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -lc "$*" 2>&1 | tee -a "$AK_LOG_DIR/ubuntu-tools.log"; }
 
+ubuntu_apt_missing(){
+  ubuntu_ok || { echo "Ubuntu not ready. Install it first."; return 1; }
+  local missing
+  missing="$(proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -s -- "$@" <<'UBU'
+for p in "$@"; do dpkg -s "$p" >/dev/null 2>&1 || printf '%s ' "$p"; done
+UBU
+)"
+  if [ -z "$(printf '%s' "$missing" | tr -d '[:space:]')" ]; then
+    echo "✅ All requested Ubuntu packages are already installed. No internet used."
+    log "UBUNTU: all packages already installed: $*"
+    return 0
+  fi
+  log "UBUNTU install missing packages:$missing"
+  echo "📦 Installing only missing packages:$missing"
+  proot-distro login "${AK_UBUNTU_DISTRO}" -- bash -lc "export DEBIAN_FRONTEND=noninteractive; apt-get install -y --no-install-recommends $missing" >> "$AK_LOG_DIR/ubuntu-tools.log" 2>&1
+  local code=$?
+  [ $code -eq 0 ] && echo "✅ Installed missing packages." || echo "⚠️ Some packages failed. Check logs: $AK_LOG_DIR/ubuntu-tools.log"
+  return $code
+}
+ubuntu_pipx_install(){ ubuntu_ok || return 1; local tool="$1"; shift; ubuntu_exec "command -v '$tool' >/dev/null 2>&1" && { echo "✅ $tool already installed. Skipping."; return 0; }; ubuntu_run_logged "$*"; }
+
 # ---------- UI ----------
 C_RESET=$'\033[0m'; C_DIM=$'\033[2m'; C_BOLD=$'\033[1m'; C_CYAN=$'\033[38;5;51m'; C_PURPLE=$'\033[38;5;141m'; C_ORANGE=$'\033[38;5;208m'; C_GREEN=$'\033[38;5;82m'; C_GOLD=$'\033[38;5;220m'; C_RED=$'\033[38;5;203m'
 ui_splash(){
@@ -257,21 +278,39 @@ PY
 }
 
 # ---------- Cyber/dev installers ----------
-cyber_essential(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y nmap netcat-openbsd whois dnsutils traceroute curl wget jq python3 git whatweb'; }
-cyber_recon(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y nmap netcat-openbsd whois dnsutils traceroute iproute2 net-tools whatweb wafw00f curl wget jq; pipx install rustscan || true'; }
-cyber_web(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y nikto sqlmap whatweb wafw00f gobuster ffuf httpie python3-pip git; pipx install dirsearch || pip install -U dirsearch || true'; }
-cyber_hash(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y john hashcat hashid wordlists crunch || apt install -y john hashid crunch'; }
-cyber_ctf(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y gdb gdbserver radare2 binutils strace ltrace file xxd python3-pip python3-venv; pipx install pwntools || pip install -U pwntools; pipx install checksec || true'; }
-cyber_forensics(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y binwalk exiftool file foremost steghide imagemagick xxd ruby; gem install zsteg || true'; }
-cyber_reverse(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y gdb gdbserver radare2 binutils strace ltrace file xxd patchelf python3-pip; pipx install checksec || true'; }
-cyber_osint(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y whois dnsutils traceroute theharvester spiderfoot || apt install -y whois dnsutils traceroute theharvester || true; pipx install holehe || pip install -U holehe || true'; }
-cyber_api(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y curl wget jq httpie postman || apt install -y curl wget jq httpie; pipx install arjun || pip install -U arjun || true'; }
-cyber_mobile(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y apktool jadx adb android-tools-adb android-tools-fastboot || apt install -y apktool jadx || true; pipx install objection || pip install -U objection || true'; }
-cyber_wordlists(){ patch_ubuntu_full; ubuntu_run_logged 'apt install -y wordlists seclists crunch cewl || apt install -y wordlists crunch; mkdir -p /usr/share/wordlists; [ -f /usr/share/wordlists/rockyou.txt.gz ] && gzip -dk /usr/share/wordlists/rockyou.txt.gz || true'; }
+cyber_essential(){ patch_ubuntu_full; ubuntu_apt_missing nmap netcat-openbsd whois dnsutils traceroute curl wget jq python3 git whatweb; }
+cyber_recon(){ patch_ubuntu_full; ubuntu_apt_missing nmap netcat-openbsd whois dnsutils traceroute iproute2 net-tools whatweb wafw00f curl wget jq masscan; ubuntu_pipx_install rustscan 'pipx install rustscan || true'; }
+cyber_web(){ patch_ubuntu_full; ubuntu_apt_missing nikto sqlmap whatweb wafw00f gobuster ffuf httpie python3-pip git; ubuntu_pipx_install dirsearch 'pipx install dirsearch || pip install -U dirsearch || true'; }
+cyber_hash(){ patch_ubuntu_full; ubuntu_apt_missing john hashcat hashid wordlists crunch || ubuntu_apt_missing john hashid crunch; }
+cyber_ctf(){ patch_ubuntu_full; ubuntu_apt_missing gdb gdbserver radare2 binutils strace ltrace file xxd python3-pip python3-venv; ubuntu_pipx_install pwn 'pipx install pwntools || pip install -U pwntools'; ubuntu_pipx_install checksec 'pipx install checksec || true'; }
+cyber_forensics(){ patch_ubuntu_full; ubuntu_apt_missing binwalk exiftool file foremost steghide imagemagick xxd ruby; ubuntu_exec 'command -v zsteg >/dev/null 2>&1' && echo '✅ zsteg already installed.' || ubuntu_run_logged 'gem install zsteg || true'; }
+cyber_reverse(){ patch_ubuntu_full; ubuntu_apt_missing gdb gdbserver radare2 binutils strace ltrace file xxd patchelf python3-pip; ubuntu_pipx_install checksec 'pipx install checksec || true'; }
+cyber_osint(){ patch_ubuntu_full; ubuntu_apt_missing whois dnsutils traceroute theharvester spiderfoot || ubuntu_apt_missing whois dnsutils traceroute theharvester; ubuntu_pipx_install holehe 'pipx install holehe || pip install -U holehe || true'; }
+cyber_api(){ patch_ubuntu_full; ubuntu_apt_missing curl wget jq httpie || true; ubuntu_pipx_install arjun 'pipx install arjun || pip install -U arjun || true'; }
+cyber_mobile(){ patch_ubuntu_full; ubuntu_apt_missing apktool jadx android-tools-adb android-tools-fastboot || ubuntu_apt_missing apktool jadx; ubuntu_pipx_install objection 'pipx install objection || pip install -U objection || true'; }
+cyber_wordlists(){ patch_ubuntu_full; ubuntu_apt_missing wordlists seclists crunch cewl || ubuntu_apt_missing wordlists crunch; ubuntu_exec 'mkdir -p /usr/share/wordlists; [ -f /usr/share/wordlists/rockyou.txt.gz ] && [ ! -f /usr/share/wordlists/rockyou.txt ] && gzip -dk /usr/share/wordlists/rockyou.txt.gz || true'; }
 cyber_advanced(){ patch_ubuntu_full; echo "Advanced tools are optional and lab-only."; confirm_auth || return; ubuntu_run_logged 'apt install -y hydra metasploit-framework exploitdb searchsploit nuclei amass masscan responder enum4linux smbclient || apt install -y hydra exploitdb masscan enum4linux smbclient || true'; }
 cyber_full(){ cyber_essential; cyber_recon; cyber_web; cyber_hash; cyber_ctf; cyber_forensics; cyber_reverse; cyber_osint; cyber_api; cyber_wordlists; }
 cyber_health(){ ubuntu_ok || { echo Ubuntu not ready; return; }; ubuntu_exec 'for t in nmap masscan whatweb nikto sqlmap gobuster ffuf dirsearch nuclei amass hydra msfconsole searchsploit john hashcat hashid gdb radare2 binwalk exiftool steghide apktool jadx adb theHarvester arjun http; do if command -v $t >/dev/null 2>&1; then echo "[✓] $t: $(command -v $t)"; else echo "[ ] $t: missing"; fi; done'; }
-cyber_helpers(){ while true; do ui_key_select "Authorized Run Helpers" "nmap helper" "DNS lookup helper" "HTTP headers helper" "WhatWeb helper" "Back"; case $? in 1) confirm_auth || { pause; continue; }; read -rp "Target/IP/domain: " t; ubuntu_exec "nmap -sV --reason '$t'"; pause;; 2) read -rp "Domain: " d; ubuntu_exec "dig '$d' any +short"; pause;; 3) read -rp "URL: " u; ubuntu_exec "curl -I -L '$u'"; pause;; 4) confirm_auth || { pause; continue; }; read -rp "URL/domain: " u; ubuntu_exec "whatweb '$u'"; pause;; 5|255) break;; esac; done; }
+safe_target(){ printf '%s' "$1" | grep -Eq '^[A-Za-z0-9._:/?=&%+#,@-]{1,220}$'; }
+run_tool_prompt(){ local tool="$1" label="Target/URL/domain" target; read -rp "$label: " target; run_tool "$tool" "$target"; }
+run_tool(){
+  local tool="$1" target="$2"
+  [ -n "$target" ] || { echo "Target required."; return 2; }
+  safe_target "$target" || { echo "Invalid target characters."; return 2; }
+  case "$tool" in
+    nmap) confirm_auth || return 1; ubuntu_exec "nmap -sV --reason --top-ports 100 '$target'";;
+    nmap-quick) confirm_auth || return 1; ubuntu_exec "nmap -T4 -F '$target'";;
+    dig) ubuntu_exec "dig '$target' any +short";;
+    headers) ubuntu_exec "curl -I -L --max-time 20 '$target'";;
+    whatweb) confirm_auth || return 1; ubuntu_exec "whatweb '$target'";;
+    wafw00f) confirm_auth || return 1; ubuntu_exec "wafw00f '$target'";;
+    nikto) confirm_auth || return 1; ubuntu_exec "nikto -h '$target' -nointeractive";;
+    whois) ubuntu_exec "whois '$target' | head -80";;
+    *) echo "Unknown tool: $tool"; return 2;;
+  esac
+}
+cyber_helpers(){ while true; do ui_key_select "Authorized Run Helpers" "Quick nmap scan" "Service nmap scan" "DNS lookup" "HTTP headers" "WhatWeb fingerprint" "WAFW00F check" "WHOIS lookup" "Nikto basic web check" "Back"; case $? in 1) read -rp "Target/IP/domain: " t; run_tool nmap-quick "$t"; pause;; 2) read -rp "Target/IP/domain: " t; run_tool nmap "$t"; pause;; 3) read -rp "Domain: " d; run_tool dig "$d"; pause;; 4) read -rp "URL: " u; run_tool headers "$u"; pause;; 5) read -rp "URL/domain: " u; run_tool whatweb "$u"; pause;; 6) read -rp "URL: " u; run_tool wafw00f "$u"; pause;; 7) read -rp "Domain/IP: " d; run_tool whois "$d"; pause;; 8) read -rp "URL/host: " u; run_tool nikto "$u"; pause;; 9|255) break;; esac; done; }
 health_once(){ clear; banner; echo "🩺 Health Check"; echo; status_line; echo; echo "Termux tools:"; for t in fish curl git ruby lolcat proot-distro python; do has "$t" && echo "[✓] $t" || echo "[ ] $t"; done; echo; echo "Ubuntu tools:"; cyber_health; }
 health_menu(){ health_once; pause; }
 settings_menu(){ ${EDITOR:-nano} "$AK_CONFIG"; }
@@ -342,6 +381,8 @@ case "${1:-menu}" in
   dev-all) ubuntu_run_logged 'apt install -y nodejs npm python3 python3-pip python3-venv pipx git tmux htop tree jq ripgrep fd-find bat fzf screenfetch figlet ruby build-essential; npm install -g npm@latest pnpm yarn typescript ts-node nodemon || true';;
 
   security|cyber) cyber_menu;;
+  run-tool) shift; run_tool "$@";;
+  run-tool-prompt) shift; run_tool_prompt "$@";;
   cyber-essential) cyber_essential;; cyber-recon) cyber_recon;; cyber-web) cyber_web;; cyber-hash) cyber_hash;; cyber-ctf) cyber_ctf;; cyber-forensics) cyber_forensics;; cyber-reverse) cyber_reverse;; cyber-osint) cyber_osint;; cyber-api) cyber_api;; cyber-mobile) cyber_mobile;; cyber-wordlists) cyber_wordlists;; cyber-advanced) cyber_advanced;; cyber-full) cyber_full;; cyber-health) cyber_health;; cyber-helpers) cyber_helpers;;
 
   web) web_menu;; web-start) web_start_bg;; web-stop) web_stop;; web-status) web_status;;

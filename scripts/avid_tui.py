@@ -8,6 +8,14 @@ from typing import Callable, Optional
 
 APP_DIR = os.environ.get("AK_APP_DIR", os.path.expanduser("~/.termux-avid-kiya"))
 BACKEND = os.path.join(APP_DIR, "bin", "avid")
+if not os.path.exists(BACKEND):
+    here = os.path.abspath(os.path.dirname(__file__))
+    cand = os.path.join(here, "avid.sh")
+    if os.path.exists(cand):
+        BACKEND = cand
+    else:
+        cand = os.path.join(os.path.abspath(os.path.join(here, "..")), "scripts", "avid.sh")
+        if os.path.exists(cand): BACKEND = cand
 HANDLE = os.environ.get("AK_HANDLE", "@AvidKiya")
 
 @dataclass
@@ -105,6 +113,9 @@ MENUS: dict[str, tuple[str, list[Action]]] = {
         Action("Install Android/Mobile Hacking Lab Pack", "apktool, jadx, adb, objection", cmd=[BACKEND, "cyber-mobile"]),
         Action("Install Wordlists Pack", "seclists, rockyou, crunch", cmd=[BACKEND, "cyber-wordlists"]),
         Action("Install Advanced Optional Pack", "hydra, metasploit, nuclei, amass", cmd=[BACKEND, "cyber-advanced"]),
+        Action("Run Quick nmap scan", "authorized target prompt", cmd=[BACKEND, "run-tool-prompt", "nmap-quick"]),
+        Action("Run HTTP headers", "URL prompt", cmd=[BACKEND, "run-tool-prompt", "headers"]),
+        Action("Run WhatWeb fingerprint", "authorized URL prompt", cmd=[BACKEND, "run-tool-prompt", "whatweb"]),
         Action("Security Tools Health Check", "show installed/missing", cmd=[BACKEND, "cyber-health"]),
         Action("Authorized Run Helpers", "requires AUTHORIZED", cmd=[BACKEND, "cyber-helpers"]),
         Action("← Back", "main menu", submenu="back"),
@@ -212,9 +223,13 @@ class TUI:
             self.idx = 0; return None
         if a.cmd:
             curses.endwin()
-            print("\n◆", a.title)
+            print("\n╭" + "─"*58 + "╮")
+            print("│ ◆ " + a.title[:52].ljust(54) + "│")
+            print("╰" + "─"*58 + "╯")
             try:
-                subprocess.call(a.cmd)
+                env=os.environ.copy(); env["AK_NO_MOTD"]="1"
+                code=subprocess.call(a.cmd, env=env)
+                print("\n" + ("✅ Done" if code==0 else f"⚠️ Finished with code {code}"))
             except FileNotFoundError:
                 print("Backend not found:", " ".join(a.cmd))
             input("\nPress Enter to return to AvidKiya DevHub CODE...")

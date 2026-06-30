@@ -6,12 +6,14 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAUNCHER_SRC="$PROJECT_DIR/scripts/launcher.sh"
 AVID_SRC="$PROJECT_DIR/scripts/avid.sh"
 TUI_SRC="$PROJECT_DIR/scripts/avid_tui.py"
+PC_SRC="$PROJECT_DIR/scripts/avid_pc.py"
 WEB_SRC="$PROJECT_DIR/web"
 AGENT_SRC="$PROJECT_DIR/agent"
 CONFIG_SRC="$PROJECT_DIR/config.example"
 LAUNCHER_DST="$APP_DIR/launcher.sh"
 AVID_DST="$APP_DIR/bin/avid"
 TUI_DST="$APP_DIR/bin/avid-tui"
+PC_DST="$APP_DIR/bin/avid-pc"
 WEB_DST="$APP_DIR/web"
 AGENT_DST="$APP_DIR/agent"
 CONFIG_DST="$APP_DIR/config"
@@ -58,6 +60,7 @@ fi
 [ -f "$LAUNCHER_SRC" ] || { msg "[!] Missing scripts/launcher.sh"; exit 1; }
 [ -f "$AVID_SRC" ] || { msg "[!] Missing scripts/avid.sh"; exit 1; }
 [ -f "$TUI_SRC" ] || { msg "[!] Missing scripts/avid_tui.py"; exit 1; }
+[ -f "$PC_SRC" ] || { msg "[!] Missing scripts/avid_pc.py"; exit 1; }
 
 msg "[+] Creating app directory: $APP_DIR"
 mkdir -p "$APP_DIR/bin"
@@ -104,15 +107,20 @@ cp "$AVID_SRC" "$AVID_DST"
 chmod +x "$AVID_DST"
 cp "$TUI_SRC" "$TUI_DST"
 chmod +x "$TUI_DST"
+cp "$PC_SRC" "$PC_DST"
+chmod +x "$PC_DST"
 mkdir -p "$APP_DIR/scripts"
 cp "$TUI_SRC" "$APP_DIR/scripts/avid_tui.py"
 chmod +x "$APP_DIR/scripts/avid_tui.py"
+cp "$PC_SRC" "$APP_DIR/scripts/avid_pc.py"
+chmod +x "$APP_DIR/scripts/avid_pc.py"
 rm -rf "$WEB_DST"
 cp -R "$WEB_SRC" "$WEB_DST"
 rm -rf "$AGENT_DST"
 cp -R "$AGENT_SRC" "$AGENT_DST"
 [ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ] && ln -sf "$AVID_DST" "$PREFIX/bin/avid" || true
 [ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ] && ln -sf "$TUI_DST" "$PREFIX/bin/avid-tui" || true
+[ -n "${PREFIX:-}" ] && [ -d "$PREFIX/bin" ] && ln -sf "$PC_DST" "$PREFIX/bin/avid-pc" || true
 
 if [ ! -f "$CONFIG_DST" ]; then
   cp "$CONFIG_SRC" "$CONFIG_DST"
@@ -121,6 +129,10 @@ else
   msg "[✓] Existing config kept: $CONFIG_DST"
   msg "[i] New defaults are available in: $CONFIG_SRC"
 fi
+
+msg "[+] Disabling noisy Termux MOTD when possible..."
+: > "$HOME/.hushlogin" 2>/dev/null || true
+[ -f "$PREFIX/etc/motd" ] && mv "$PREFIX/etc/motd" "$PREFIX/etc/motd.avid-backup.$(date +%Y%m%d-%H%M%S)" 2>/dev/null || true
 
 msg "[+] Backing up and rewriting ~/.bashrc startup block..."
 touch "$BASHRC"
