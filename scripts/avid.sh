@@ -7,6 +7,7 @@ AK_APP_DIR="${AK_APP_DIR:-$HOME/.termux-avid-kiya}"
 AK_CONFIG="$AK_APP_DIR/config"
 AK_LOG_DIR="$AK_APP_DIR/logs"
 AK_WEB_DIR="$AK_APP_DIR/web"
+AK_AGENT_DIR="$AK_APP_DIR/agent"
 AK_WEB_PID="$AK_APP_DIR/web.pid"
 mkdir -p "$AK_LOG_DIR"
 
@@ -91,18 +92,19 @@ while true; do clear; banner; status_line; cat <<'MENU_EOF'
 
 1. 🐧 Termux Environment
 2. ☣️ Ubuntu Environment
-3. 🤖 AI Coding Tools
-4. 🧰 Developer Tools
-5. 🛡️ Cybersecurity / Authorized Pentest Lab
-6. 🌐 Local Web Control Panel
-7. 🩺 Health Check / Repair
-8. ⚙️ Settings
-9. 📜 Logs
-10. 🚪 Exit
+3. ⚡ AvidKiya Agent
+4. 🤖 AI CLI Tools
+5. 🧰 Developer Tools
+6. 🛡️ Cybersecurity / Authorized Pentest Lab
+7. 🌐 Local Web Control Panel
+8. 🩺 Health Check / Repair
+9. ⚙️ Settings
+10. 📜 Logs
+11. 🚪 Exit
 MENU_EOF
 printf "\nChoose option: "; read -r c
 case "$c" in
- 1) termux_menu;; 2) ubuntu_menu;; 3) ai_menu;; 4) dev_menu;; 5) cyber_menu;; 6) web_menu;; 7) health_menu;; 8) settings_menu;; 9) logs_menu;; 10|q|Q) break;; *) echo Invalid; pause;; esac
+ 1) termux_menu;; 2) ubuntu_menu;; 3) agent_menu;; 4) ai_menu;; 5) dev_menu;; 6) cyber_menu;; 7) web_menu;; 8) health_menu;; 9) settings_menu;; 10) logs_menu;; 11|q|Q) break;; *) echo Invalid; pause;; esac
 done
 }
 
@@ -155,6 +157,28 @@ export LANG=C.UTF-8
 export LC_ALL=C.UTF-8
 SH_EOF
 chmod +x /etc/profile.d/avid-kiya-path.sh; grep -q mimocode /root/.bashrc 2>/dev/null || echo "export PATH=\"/root/.mimocode/bin:\$PATH\"" >> /root/.bashrc; fish -lc '\''type -q omf; or curl -L https://github.com/oh-my-fish/oh-my-fish/raw/master/bin/install | fish'\'' || true; fish -lc '\''omf install batman; or true; omf theme batman; or omf batman; or true'\'' || true; date > /root/.avid-devhub/base.ok'
+}
+
+
+agent_menu(){
+while true; do clear; banner; cat <<'AGENT_EOF'
+⚡ AvidKiya Agent
+Safe multi-provider agent using official APIs, official CLIs and local models.
+
+1. Init agent config
+2. Show agent config path/content
+3. Run agent prompt
+4. Add OpenAI-compatible provider
+5. Back
+AGENT_EOF
+read -rp "Choose: " c
+case "$c" in
+1) python "$AK_AGENT_DIR/avid_agent.py" init; pause;;
+2) python "$AK_AGENT_DIR/avid_agent.py" config; pause;;
+3) read -rp "Prompt: " p; python "$AK_AGENT_DIR/avid_agent.py" run "$p"; pause;;
+4) read -rp "Name: " n; read -rp "Base URL: " u; read -rp "Model: " m; read -rp "API key env var: " e; python "$AK_AGENT_DIR/avid_agent.py" add-provider "$n" "$u" "$m" "$e"; pause;;
+5) break;; esac
+done
 }
 
 ai_menu(){ while true; do clear; banner; cat <<'MENU_EOF'
@@ -278,8 +302,8 @@ settings_menu(){ ${EDITOR:-nano} "$AK_CONFIG"; }
 logs_menu(){ clear; ls -lh "$AK_LOG_DIR"; echo; read -rp "Open log file name or Enter back: " f; [ -n "$f" ] && ${PAGER:-less} "$AK_LOG_DIR/$f"; }
 
 case "${1:-menu}" in
- menu) main_menu;; web) web_menu;; web-start) web_start_bg;; web-stop) web_stop;; web-status) web_status;; health) health_menu;; health-once) health_once;; security|cyber) cyber_menu;; ai) ai_menu;; ubuntu) ubuntu_menu;; termux) termux_menu;;
- ubuntu-patch) patch_ubuntu_full;;
+ menu) main_menu;; agent) agent_menu;; web) web_menu;; web-start) web_start_bg;; web-stop) web_stop;; web-status) web_status;; health) health_menu;; health-once) health_once;; security|cyber) cyber_menu;; ai) ai_menu;; ubuntu) ubuntu_menu;; termux) termux_menu;;
+ ubuntu-patch) patch_ubuntu_full;; agent-run) shift; python "$AK_AGENT_DIR/avid_agent.py" run "$@";;
  ai-mimo) install_mimo;; ai-claude) install_claude;; ai-gemini) install_gemini;; ai-aider) ubuntu_run_logged 'apt install -y pipx python3-venv; pipx ensurepath; pipx install aider-chat || pip install -U aider-chat';; ai-all) install_mimo; install_claude; install_gemini; ubuntu_run_logged 'apt install -y pipx python3-venv; pipx ensurepath; pipx install aider-chat || pip install -U aider-chat';;
  dev-all) ubuntu_run_logged 'apt install -y nodejs npm python3 python3-pip python3-venv pipx git tmux htop tree jq ripgrep fd-find bat fzf screenfetch figlet ruby build-essential; npm install -g npm@latest pnpm yarn typescript ts-node nodemon || true';;
  cyber-essential) cyber_essential;; cyber-recon) cyber_recon;; cyber-web) cyber_web;; cyber-hash) cyber_hash;; cyber-ctf) cyber_ctf;; cyber-forensics) cyber_forensics;; cyber-reverse) cyber_reverse;; cyber-full) cyber_full;;
