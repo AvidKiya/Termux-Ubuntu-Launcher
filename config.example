@@ -30,28 +30,3 @@ AK_INSTALL_MIMO="1"
 
 # 1 = after showing Ubuntu banner, open fish with Oh My Fish/batman
 AK_AUTO_FISH_AFTER_UBUNTU="1"
-# Branding
-AK_AUTHOR="AvidKiya"
-AK_HANDLE="@AvidKiya"
-AK_REPO_URL="https://github.com/AvidKiya/Termux-Ubuntu-Launcher"
-# Startup mode: ask, app, cli, web, shell
-AK_STARTUP_MODE="ask"
-# Local web app defaults
-AK_WEB_HOST="127.0.0.1"
-AK_WEB_PORT="8765"
-# AI safety: official APIs/local models only. No token scraping or payment bypass.
-AK_AI_MODE="official"
-
-AK_CLI_THEME="mimo"
-
-AK_CLI_ANIMATION="1"
-
-AK_CLI_COMPACT="auto"
-
-AK_MODELS_DIR="/root/.avid-devhub/models"
-
-AK_LLAMA_SRC="/root/.avid-devhub/src/llama.cpp"
-
-AK_LLAMA_PORT="8080"
-
-AK_LOCAL_MODEL_PROVIDER="llama_local"

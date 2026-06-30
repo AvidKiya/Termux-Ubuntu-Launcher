@@ -1,49 +1,5 @@
 # Changelog
 
-## v3.12.0 - Complete Packaging: Doctor + EXE + Android APK
-
-- Added `tools/qa_selftest.py` full offline doctor for syntax, routes, web pages and packaging checks.
-- Added desktop GUI `scripts/avid_desktop.py` using Tkinter.
-- Added PC launcher commands: `desktop`, `doctor`, `build-exe`.
-- Added Windows EXE packaging scripts for PyInstaller.
-- Added real Android WebView APK project under `android/`.
-- Added GitHub Actions workflow to build QA, Windows EXE and Android APK artifacts.
-- Added documentation for release packaging and VS Code/desktop usage.
-
-
-## v3.11.0 - Operational Tools + PC/VS Code Support
-
-- Added smart Ubuntu package installer that checks `dpkg -s` first and installs only missing packages.
-- Replaced noisy `apt` output for security packs with cleaner summaries and logs.
-- Added operational authorized run helpers: nmap quick/service, dig, headers, whatweb, wafw00f, whois, nikto.
-- Web panel `تست نفوذ / هک` can now run authorized helpers and show output logs.
-- Added `scripts/avid_pc.py` plus `avid.ps1` and `avid.cmd` for PowerShell, CMD, Linux/macOS terminals and VS Code.
-- Installer now disables Termux MOTD noise with `.hushlogin`/motd backup where possible.
-- TUI now falls back to local project backend when not installed into Termux.
-
-
-## v3.10.0 - Android-like App Mode + Pentest/Hack Lab
-
-- Added `avid app`: starts localhost web panel and opens it on Android as an app-like experience.
-- Added `avid app-shortcuts`: creates Termux:Widget shortcuts for DevHub App, CLI and Web Panel.
-- Added PWA manifest and SVG icon for mobile standalone/browser install support.
-- Startup `App Mode` now calls the new app flow instead of only web-start.
-- Renamed security section to `تست نفوذ / هک`.
-- Added real authorized lab packs: OSINT, API Testing, Android/Mobile Hacking Lab, Wordlists and Advanced Optional.
-- Expanded web panel Pentest/Hack section and status checks.
-
-
-## v3.9.0 - MiMo-inspired AvidKiya DevHub CODE TUI
-
-- Added `scripts/avid_tui.py`, a dedicated Python curses terminal UI inspired by the MiMo Code experience.
-- Added `avid code` / `avid tui` commands.
-- Startup selector now prefers the richer TUI when `AK_CLI_THEME="mimo"`.
-- Preserved the original classic Termux/Ubuntu launcher as a separate mode.
-- Added direct backend routes for all TUI sections so arrow-selected actions call real commands.
-- Fixed web backend routing safety: `web_start_bg`, `web-stop`, `web-status`, and foreground web mode are all explicit commands.
-- Installer now copies and symlinks `avid-tui` without reinstalling existing packages.
-
-
 ## 2.3.0 - 2026-06-29
 
 - Ubuntu now installs fish, Oh My Fish, and the batman theme too.

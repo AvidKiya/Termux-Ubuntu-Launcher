@@ -1,1 +1,0 @@
-{% extends 'base.html' %}{% block content %}<section class="page-head"><h1>📜 {{t.logs}}</h1><p>Task output and installer logs.</p></section><section class="log-list">{% for f in files %}<a class="logitem" href="/logs?lang={{lang}}&file={{f.name}}">{{f.name}}</a>{% endfor %}</section><pre class="logbox">{{content}}</pre>{% endblock %}
