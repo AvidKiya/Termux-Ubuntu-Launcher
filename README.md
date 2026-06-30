@@ -411,3 +411,56 @@ Recommended phone-friendly models:
 - Phi-3 Mini 4K Instruct Q4, heavier
 
 This requires no API key and works offline after the model is downloaded.
+
+
+## Release Packaging: EXE + APK
+
+### Windows EXE
+
+```powershell
+.\packaging\windowsuild_exe.ps1
+```
+
+or from any PC terminal:
+
+```bash
+python scripts/avid_pc.py build-exe
+```
+
+Output goes to `dist/AvidKiyaDevHub.exe` on Windows.
+
+### Android APK
+
+A real Android WebView launcher project is included in `android/`:
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+Output:
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+The APK opens the local Termux backend at `http://127.0.0.1:8765` and includes a button to start/open the Termux backend.
+
+### GitHub Actions
+
+The workflow `.github/workflows/build-release.yml` can build:
+
+- QA/self-test
+- Windows EXE artifact
+- Android debug APK artifact
+
+Run it manually from GitHub Actions or push a `v*` tag.
+
+### Doctor
+
+Run complete project QA:
+
+```bash
+python tools/qa_selftest.py
+avid doctor
+```

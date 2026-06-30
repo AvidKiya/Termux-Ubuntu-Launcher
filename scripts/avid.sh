@@ -387,6 +387,9 @@ case "${1:-menu}" in
 
   web) web_menu;; web-start) web_start_bg;; web-stop) web_stop;; web-status) web_status;;
   web-foreground) web_install_flask; cd "$AK_WEB_DIR" && AK_APP_DIR="$AK_APP_DIR" AK_WEB_HOST="$AK_WEB_HOST" AK_WEB_PORT="$AK_WEB_PORT" python app.py;;
+  doctor) python "$AK_APP_DIR/tools/qa_selftest.py" 2>/dev/null || python "$(dirname "$0")/../tools/qa_selftest.py";;
+  desktop) python "$AK_APP_DIR/bin/avid-pc" desktop 2>/dev/null || python "$(dirname "$0")/avid_pc.py" desktop;;
+  pc) shift; python "$AK_APP_DIR/bin/avid-pc" "$@" 2>/dev/null || python "$(dirname "$0")/avid_pc.py" "$@";;
   health) health_menu;; health-once) health_once;; settings) settings_menu;; logs) logs_menu;;
   *) main_menu;;
 esac

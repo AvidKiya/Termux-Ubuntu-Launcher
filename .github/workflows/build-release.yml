@@ -1,0 +1,33 @@
+name: Build AvidKiya DevHub Release
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: python tools/qa_selftest.py
+  windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: powershell -ExecutionPolicy Bypass -File packaging/windows/build_exe.ps1
+      - uses: actions/upload-artifact@v4
+        with: { name: AvidKiyaDevHub-Windows, path: dist/* }
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: 'temurin', java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - run: cd android && gradle wrapper --gradle-version 8.7 || true
+      - run: cd android && ./gradlew assembleDebug || gradle assembleDebug
+      - uses: actions/upload-artifact@v4
+        with: { name: AvidKiyaDevHub-Android-debug-apk, path: android/app/build/outputs/apk/debug/*.apk }

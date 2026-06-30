@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.12.0 - Complete Packaging: Doctor + EXE + Android APK
+
+- Added `tools/qa_selftest.py` full offline doctor for syntax, routes, web pages and packaging checks.
+- Added desktop GUI `scripts/avid_desktop.py` using Tkinter.
+- Added PC launcher commands: `desktop`, `doctor`, `build-exe`.
+- Added Windows EXE packaging scripts for PyInstaller.
+- Added real Android WebView APK project under `android/`.
+- Added GitHub Actions workflow to build QA, Windows EXE and Android APK artifacts.
+- Added documentation for release packaging and VS Code/desktop usage.
+
+
 ## v3.11.0 - Operational Tools + PC/VS Code Support
 
 - Added smart Ubuntu package installer that checks `dpkg -s` first and installs only missing packages.
